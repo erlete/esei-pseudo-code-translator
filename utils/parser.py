@@ -29,6 +29,8 @@ class PseudoCodeParserBase:
         "fin_desde": ''
     }
 
+    _TEMP_OUTPUT = "temp.py"
+
     @property
     def sample(self):
         return self._sample
@@ -43,27 +45,49 @@ class PseudoCodeParserBase:
 
 class PseudoCodeParser(PseudoCodeParserBase):
     def __init__(self, sample):
-        self._sample = sample
+        self._sample = sample.lower()
 
         # Line spacing mapping:
         self._spacing = {
-            str(line_index): self.count_tabs(line_index)
-            for line_index in self.sample.split("\n")
+            str(index): self.count_tabs(line)
+            for index, line in enumerate(self.sample.split('\n'))
         }
 
+        self._lines = self._reduce_code()
+        self._parse_symbols()
+
+    def _reduce_code(self):
+        """Returns a reduced list of each line of code.
+
+        This method removes spacing from all lines of code and returns a list
+        that might contain empty strings.
+
+        Note:
+        -----
+        Empty strings must be returned in order to prevent `self._spacing` map
+        from indexing lines incorrectly.
+        """
+
+        return [
+            item.strip()
+            for item in self._sample.split('\n')
+        ]
+
     def _parse_symbols(self):
-        """Replaces pseudo code symbols with Python symbols.
+        """Converts pseudo code symbols Python ones.
 
         This method uses `PseudoCodeParserBase._SYMBOLS` map to replace each
         pseudo code expression with its Python equivalent.
         """
 
-        line = line.strip()
-        for symbol in self._SYMBOLS:
-            line = line.replace(symbol, self._SYMBOLS[symbol])
-        return line
+        for l_index, _ in enumerate(self._lines):
+            for symbol in self._SYMBOLS:
+                self._lines[l_index] = self._lines[l_index].replace(
+                    symbol, self._SYMBOLS.get(symbol)
+                )
 
     def _parse_for_statement(self, line):
+        """Converts pseudo code "for loop" statements into Python ones."""
 
         line = line.strip().split(' ')
 
@@ -93,31 +117,24 @@ class PseudoCodeParser(PseudoCodeParserBase):
 
         return len(line) - len(line.lstrip())
 
-    def main(self):
-        with open("./sample.txt", mode='r', encoding="utf-8") as file:
-            data = file.read()
+    def parse(self):
+        output = open(f"./{self._TEMP_OUTPUT}", mode='w', encoding="utf-8")
 
-        data = data.split("\n")
-
-        out = open("./out.py", mode='w', encoding="utf-8")
-
-        # 1. Remove empty lines
-        data = [line.lower() for line in data if line != ""]
-
-        for index, line in enumerate(data):
-            original = line
+        for index, line in enumerate(self._lines):
             nline = ''
-            line = self._parse_symbols(line)
+
             if line.strip().startswith("desde"):
                 nline = self._parse_for_statement(line)
+
             elif line.strip().startswith("si"):
                 nline = self._parse_if_statement(line)
+
             else:
                 nline = line
 
-            out.write(f"{' ' * self.count_tabs(original)}{nline}\n")
+            output.write(f"{' ' * self._spacing.get(str(index))}{nline}\n")
 
-        out.close()
+        output.close()
 
-        os.system("python3 out.py")
-        os.remove("./out.py")
+        os.system(f"python3 {self._TEMP_OUTPUT}")
+        os.remove(f"./{self._TEMP_OUTPUT}")
