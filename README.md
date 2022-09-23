@@ -40,4 +40,4 @@ _Main script execution and output visualization_
 
 ## Disclaimer
 
-Programs contained in this repository are tested against specific pseudo code syntax and rules, any slight variation of said parameters might result on a innacurate result or unexpected program crashes. The author should not be, in any way, related to the output of the programs and/or made responsible for their usage, as they are just a tool.
+Programs contained in this repository are tested against specific pseudo code syntax and rules, any slight variation of said parameters might result on innacurate results or unexpected program crashes. The author should not be, in any way, related to the output of the programs and/or made responsible for their usage, as they are just a tool.
