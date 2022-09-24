@@ -15,8 +15,8 @@ import os
 class PseudoCodeParserBase:
     """Interface for the PseudoCodeParser class.
 
-    Contains constants used to relate pseudo code to the Python code, as well
-    as getter and setter methods for the class.
+    This class ontains essential information about the syntax specification of
+    the pseudo code language.
     """
 
     _SYMBOLS = {
@@ -31,20 +31,26 @@ class PseudoCodeParserBase:
 
     _TEMP_OUTPUT = "temp.py"
 
+
+class PseudoCodeParser(PseudoCodeParserBase):
+    """Parser class for the pseudo code language.
+
+    This class is responsible for parsing the pseudo code language and
+    converting it into Python code.
+    """
+
     @property
     def sample(self):
         return self._sample
 
     @sample.setter
-    def sample(self, value):
+    def sample(self, value: str):
         if not isinstance(value, str):
             raise TypeError("Sample must be a string")
 
         self._sample = value
 
-
-class PseudoCodeParser(PseudoCodeParserBase):
-    def __init__(self, sample):
+    def __init__(self, sample: str):
         self._sample = sample.lower()
 
         # Line spacing mapping:
@@ -86,10 +92,16 @@ class PseudoCodeParser(PseudoCodeParserBase):
                     symbol, self._SYMBOLS.get(symbol)
                 )
 
-    def _parse_for_statement(self, line):
-        """Converts pseudo code "for loop" statements into Python ones."""
+    def _parse_for_statement(self, line: str):
+        """Converts pseudo code "for loop" statements into Python ones.
 
-        line = line.strip().split(' ')
+        Parameters:
+        -----------
+         - line: str
+            The line to be analyzed.
+        """
+
+        line = line.split(' ')
 
         var = line[1]
         start = line[3]
@@ -97,16 +109,21 @@ class PseudoCodeParser(PseudoCodeParserBase):
 
         return f"for {var} in range({start}, {int(end) + 1}):"
 
-    def _parse_if_statement(self, line):
-        """Parse a line of the form "if i < 10:" and return a tuple of the form
-        (i, 10)."""
+    def _parse_if_statement(self, line: str):
+        """Converts pseudo code "if" statements into Python ones.
 
-        line = line.strip().split(' ')
+        Parameters:
+        -----------
+         - line: str
+            The line to be analyzed.
+        """
+
+        line = line.split(' ')
 
         return f"if {line[1]} {line[2]} {line[3]} {line[4]} {line[5]}:"
 
     @staticmethod
-    def count_tabs(line):
+    def count_tabs(line: str):
         """Counts the amount of spaces inserted at the beginning of a line.
 
         Parameters:
@@ -118,6 +135,13 @@ class PseudoCodeParser(PseudoCodeParserBase):
         return len(line) - len(line.lstrip())
 
     def parse(self):
+        """Main parser method.
+
+        Converts pseudo code to Python code using `PseudoCodeParserBase`
+        specification and outputs the result to a temporary file that is
+        later executed.
+        """
+
         output = open(f"./{self._TEMP_OUTPUT}", mode='w', encoding="utf-8")
 
         for index, line in enumerate(self._lines):
