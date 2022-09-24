@@ -29,6 +29,11 @@ class PseudoCodeParserBase:
         "fin_desde": ''
     }
 
+    _BEHAVIOR = {
+        "range_end_inclusive": True,
+        "range_step": 1
+    }
+
     _TEMP_OUTPUT = "temp.py"
 
 
@@ -86,9 +91,9 @@ class PseudoCodeParser(PseudoCodeParserBase):
         pseudo code expression with its Python equivalent.
         """
 
-        for l_index, _ in enumerate(self._lines):
+        for index, _ in enumerate(self._lines):
             for symbol in self._SYMBOLS:
-                self._lines[l_index] = self._lines[l_index].replace(
+                self._lines[index] = self._lines[index].replace(
                     symbol, self._SYMBOLS.get(symbol)
                 )
 
@@ -99,15 +104,29 @@ class PseudoCodeParser(PseudoCodeParserBase):
         -----------
          - line: str
             The line to be analyzed.
+
+        Original pseudo code structure:
+        -------------------------------
+        DESDE <variable> <- <value> HASTA <variable/value> HACER
+            ...
+        FIN_DESDE
+
+        Converted Python code structure:
+        --------------------------------
+        for i in range(n, m):
+            ...
+
+        Note:
+        -----
+        The m value might be increased by one depending on whether the
+        `PseudoCodeParserBase._BEHAVIOR` map has the `range_end_inclusive`
+        key set to `True` or `False`.
         """
 
         line = line.split(' ')
+        range_end = int(line[4]) + self._BEHAVIOR.get("range_end_inclusive")
 
-        var = line[1]
-        start = line[3]
-        end = line[5]
-
-        return f"for {var} in range({start}, {int(end) + 1}):"
+        return f"for {line[1]} in range({line[3]}, {range_end}):"
 
     def _parse_if_statement(self, line: str):
         """Converts pseudo code "if" statements into Python ones.
@@ -116,6 +135,17 @@ class PseudoCodeParser(PseudoCodeParserBase):
         -----------
          - line: str
             The line to be analyzed.
+
+        Original pseudo code structure:
+        -------------------------------
+        SI <variable/value> <operator> <variable/value> HACER
+            ...
+        FIN_SI
+
+        Converted Python code structure:
+        --------------------------------
+        if <variable/value> <operator> <variable/value>:
+            ...
         """
 
         line = line.split(' ')
