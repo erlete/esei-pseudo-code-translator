@@ -26,15 +26,15 @@ class PseudoCodeParserBase:
         rf"{_SP}={_SP}": " == ",         # Equal to
         rf"{_SP}<{_SP}-{_SP}": " = ",    # Asignment.
         rf"{_SP}<{_SP}>{_SP}": " != ",   # Different from.
-        rf"{_SP}mod{_SP}": " % ",        #  Modulus.
-        rf"{_SP}\+{_SP}": " + ",         #  Addition.
-        rf"{_SP}\*{_SP}": " * ",         #  Multiplication.
-        rf"{_SP}\/{_SP}": " / ",         #  Division.
-        rf"{_SP}\-{_SP}": " - ",         #  Subtraction.
-        rf"{_SP}\<{_SP}": " < ",         #  Lower than.
-        rf"{_SP}\>{_SP}": " > ",         #  Greater than.
-        rf"{_SP}\<{_SP}={_SP}": " <= ",  #  Lower than or equal to.
-        rf"{_SP}\>{_SP}={_SP}": " >= "   #  Greater than or equal to.
+        rf"{_SP}mod{_SP}": " % ",        # Modulus.
+        rf"{_SP}\+{_SP}": " + ",         # Addition.
+        rf"{_SP}\*{_SP}": " * ",         # Multiplication.
+        rf"{_SP}\/{_SP}": " / ",         # Division.
+        rf"{_SP}\-{_SP}": " - ",         # Subtraction.
+        rf"{_SP}\<{_SP}": " < ",         # Lower than.
+        rf"{_SP}\>{_SP}": " > ",         # Greater than.
+        rf"{_SP}\<{_SP}={_SP}": " <= ",  # Lower than or equal to.
+        rf"{_SP}\>{_SP}={_SP}": " >= "   # Greater than or equal to.
     }
 
     _STATEMENTS = {
@@ -79,7 +79,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
         }
 
         self._lines = self._reduce_code()
-        self._parse_symbols()
+        self._parse_operators()
 
     def _reduce_code(self):
         """Returns a reduced list of each line of code.
@@ -98,7 +98,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
             for item in self._sample.split('\n')
         ]
 
-    def _parse_symbols(self):
+    def _parse_operators(self):
         """Converts pseudo code symbols Python ones.
 
         This method uses `PseudoCodeParserBase._SYMBOLS` map to replace each
@@ -106,9 +106,11 @@ class PseudoCodeParser(PseudoCodeParserBase):
         """
 
         for index, _ in enumerate(self._lines):
-            for symbol in self._OPERATORS:
-                self._lines[index] = self._lines[index].replace(
-                    symbol, self._OPERATORS.get(symbol)
+            for expression, replacement in self._OPERATORS.items():
+                self._lines[index] = re.sub(
+                    expression,
+                    replacement,
+                    self._lines[index]
                 )
 
     def _parse_for_statement(self, line: str):
