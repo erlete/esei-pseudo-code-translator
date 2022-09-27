@@ -38,7 +38,7 @@ class PseudoCodeParserBase:
     }
 
     _STATEMENTS = {
-        r"escribir\s+": "print"
+        r"escribir[ ]{0,}\(": "print("
     }
 
     _REDUNDANT = (
@@ -85,6 +85,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
         self._lines = self._reduce_code()
         self._remove_redundant_statements()
         self._parse_operators()
+        self._parse_statements()
 
     def _reduce_code(self):
         """Returns a reduced list of each line of code.
@@ -127,6 +128,21 @@ class PseudoCodeParser(PseudoCodeParserBase):
 
         for index, _ in enumerate(self._lines):
             for expression, replacement in self._OPERATORS.items():
+                self._lines[index] = re.sub(
+                    expression,
+                    replacement,
+                    self._lines[index]
+                )
+
+    def _parse_statements(self):
+        """Converts pseudo code statements into Python ones.
+
+        This method uses `PseudoCodeParserBase._STATEMENTS` map to replace each
+        pseudo code expression with its Python equivalent.
+        """
+
+        for index, _ in enumerate(self._lines):
+            for expression, replacement in self._STATEMENTS.items():
                 self._lines[index] = re.sub(
                     expression,
                     replacement,
