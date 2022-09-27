@@ -28,56 +28,52 @@ Usage instructions are as simple as possible:
 
 ---
 
-![Screenshot 2022-09-23 at 22 13 45](https://user-images.githubusercontent.com/76848729/192049689-bd9dcd40-4ce4-4aa9-8532-5be43fa4eed4.png)
+![Pseudo code being pasted in the "sample.txt" file](https://user-images.githubusercontent.com/76848729/192049689-bd9dcd40-4ce4-4aa9-8532-5be43fa4eed4.png)
 
-_Pseudo code being pasted in the "sample.txt" file_
+Image: _Pseudo code being pasted in the "sample.txt" file_
 
 ---
 
-![Screenshot 2022-09-23 at 22 15 32](https://user-images.githubusercontent.com/76848729/192049865-e7665fdc-29eb-4919-9bc4-89e76bdc0588.png)
+![Main script execution and output visualization](https://user-images.githubusercontent.com/76848729/192049865-e7665fdc-29eb-4919-9bc4-89e76bdc0588.png)
 
-_Main script execution and output visualization_
-
+Image: _Main script execution and output visualization_
 
 ## Support
 
 ### Operators
 
-| Symbol | Parsed symbol | Identifier | Supported |
-| :---: | :---: | :---: | :---: |
-| `<-` | `=` | Assignment | ✅ |
-| `+` | `+` | Addition | ✅ |
-| `-` | `-` | Subtraction | ✅ |
-| `*` | `*` | Multiplication | ✅ |
-| `/` | `/` | Division | ✅ |
-| `MOD` | `%` | Modulus | ✅ |
-| `=` | `==` | Equalto | ✅ |
-| `<>` | `!=` | Different from | ✅ |
-| `<` | `<` | Lower than | ✅ |
-| `>` | `>` | Greater than | ✅ |
-| `<=` | `<=` | Lower than or equal to | ✅ |
-| `>=` | `>=` | Greater than or equal to | ✅ |
-
+| Symbol | Parsed symbol |        Identifier        | Supported |
+| :----: | :-----------: | :----------------------: | :-------: |
+|  `<-`  |      `=`      |        Assignment        |     ✅     |
+|  `+`   |      `+`      |         Addition         |     ✅     |
+|  `-`   |      `-`      |       Subtraction        |     ✅     |
+|  `*`   |      `*`      |      Multiplication      |     ✅     |
+|  `/`   |      `/`      |         Division         |     ✅     |
+| `MOD`  |      `%`      |         Modulus          |     ✅     |
+|  `=`   |     `==`      |         Equalto          |     ✅     |
+|  `<>`  |     `!=`      |      Different from      |     ✅     |
+|  `<`   |      `<`      |        Lower than        |     ✅     |
+|  `>`   |      `>`      |       Greater than       |     ✅     |
+|  `<=`  |     `<=`      |  Lower than or equal to  |     ✅     |
+|  `>=`  |     `>=`      | Greater than or equal to |     ✅     |
 
 ### Control statements
 
-| Statement | Parsed statement | Identifier | Supported |
-| :---: | :---: | :---: | :---: |
-| `SI` | `if` | If statement | ❌ |
-| `SI_NO` | `else` | Else statement | ❌ |
-| `CASO` | `switch` | Switch statement | ❌ |
-| `DESDE...HASTA...PASO` | `for` | For loop | ❌ |
-| `MIENTRAS...HACER` | `while` | While loop | ❌ |
-| `HACER...MIENTRAS` | `do` | Do-while loop | ❌ |
-
+|       Statement        | Parsed statement |    Identifier    | Supported |
+| :--------------------: | :--------------: | :--------------: | :-------: |
+|          `SI`          |       `if`       |   If statement   |     ❌     |
+|        `SI_NO`         |      `else`      |  Else statement  |     ❌     |
+|         `CASO`         |     `switch`     | Switch statement |     ❌     |
+| `DESDE...HASTA...PASO` |      `for`       |     For loop     |     ❌     |
+|   `MIENTRAS...HACER`   |     `while`      |    While loop    |     ❌     |
+|   `HACER...MIENTRAS`   |       `do`       |  Do-while loop   |     ❌     |
 
 ### Other statements
 
-| Statement | Parsed statement | Identifier | Supported |
-| :---: | :---: | :---: | :---: |
-| `ESCRIBIR` | `print` | Print statement | ❌ |
-| `LEER` | `input` | Input statement | ❌ |
-
+| Statement  | Parsed statement |   Identifier    | Supported |
+| :--------: | :--------------: | :-------------: | :-------: |
+| `ESCRIBIR` |     `print`      | Print statement |     ❌     |
+|   `LEER`   |     `input`      | Input statement |     ❌     |
 
 ## Disclaimer
 

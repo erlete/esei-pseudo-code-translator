@@ -10,6 +10,7 @@ Author:
 
 
 import os
+import re
 
 
 class PseudoCodeParserBase:
@@ -19,14 +20,25 @@ class PseudoCodeParserBase:
     the pseudo code language.
     """
 
-    _SYMBOLS = {
-        '=': "==",
-        "<-": '=',
-        "mod": '%',
-        "escribir ": "print",
-        "escribir": "print",
-        "fin_si": '',
-        "fin_desde": ''
+    _SP = r"[ ]{0,}"
+
+    _OPERATORS = {
+        rf"{_SP}={_SP}": " == ",         # Equal to
+        rf"{_SP}<{_SP}-{_SP}": " = ",    # Asignment.
+        rf"{_SP}<{_SP}>{_SP}": " != ",   # Different from.
+        rf"{_SP}mod{_SP}": " % ",  #  Modulus.
+        rf"{_SP}\+{_SP}": " + ",  #  Addition.
+        rf"{_SP}\*{_SP}": " * ",  #  Multiplication.
+        rf"{_SP}\/{_SP}": " / ",  #  Division.
+        rf"{_SP}\-{_SP}": " - ",  #  Subtraction.
+        rf"{_SP}\<{_SP}": " < ",  #  Lower than.
+        rf"{_SP}\>{_SP}": " > ",  #  Greater than.
+        rf"{_SP}\<{_SP}={_SP}": " <= ",  #  Lower than or equal to.
+        rf"{_SP}\>{_SP}={_SP}": " >= "  #  Greater than or equal to.
+    }
+
+    _STATEMENTS = {
+        r"escribir\s+": "print"
     }
 
     _BEHAVIOR = {
