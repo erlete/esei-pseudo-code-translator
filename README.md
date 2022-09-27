@@ -38,6 +38,47 @@ _Pseudo code being pasted in the "sample.txt" file_
 
 _Main script execution and output visualization_
 
+
+## Support
+
+### Operators
+
+| Symbol | Parsed symbol | Identifier | Supported |
+| :---: | :---: | :---: | :---: |
+| `<-` | `=` | Assignment | ✅ |
+| `+` | `+` | Addition | ✅ |
+| `-` | `-` | Subtraction | ✅ |
+| `*` | `*` | Multiplication | ✅ |
+| `/` | `/` | Division | ✅ |
+| `MOD` | `%` | Modulus | ✅ |
+| `=` | `==` | Equalto | ✅ |
+| `<>` | `!=` | Different from | ✅ |
+| `<` | `<` | Lower than | ✅ |
+| `>` | `>` | Greater than | ✅ |
+| `<=` | `<=` | Lower than or equal to | ✅ |
+| `>=` | `>=` | Greater than or equal to | ✅ |
+
+
+### Control statements
+
+| Statement | Parsed statement | Identifier | Supported |
+| :---: | :---: | :---: | :---: |
+| `SI` | `if` | If statement | ❌ |
+| `SI_NO` | `else` | Else statement | ❌ |
+| `CASO` | `switch` | Switch statement | ❌ |
+| `DESDE...HASTA...PASO` | `for` | For loop | ❌ |
+| `MIENTRAS...HACER` | `while` | While loop | ❌ |
+| `HACER...MIENTRAS` | `do` | Do-while loop | ❌ |
+
+
+### Other statements
+
+| Statement | Parsed statement | Identifier | Supported |
+| :---: | :---: | :---: | :---: |
+| `ESCRIBIR` | `print` | Print statement | ❌ |
+| `LEER` | `input` | Input statement | ❌ |
+
+
 ## Disclaimer
 
 Programs contained in this repository are tested against specific pseudo code syntax and rules, any slight variation of said parameters might result on innacurate results or unexpected program crashes. The author should not be, in any way, related to the output of the programs and/or made responsible for their usage, as they are just a tool.
