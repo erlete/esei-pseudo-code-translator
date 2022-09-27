@@ -6,9 +6,16 @@ Author:
 """
 
 
-from utils.parser import PseudoCodeParser
+import sys
+
+from PyQt6.QtWidgets import QApplication
+
+from ui.application import MainWindow
 
 
-with open("sample.txt", "r") as sample:
-    parser = PseudoCodeParser(sample.read())
-    parser.parse()
+app = QApplication(sys.argv)
+
+window = MainWindow()
+window.show()
+
+app.exec()
