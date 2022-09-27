@@ -1,8 +1,0 @@
-DESDE i <- 0 HASTA 2 HACER
-    DESDE j <- 0 HASTA 4 HACER
-        r <- i + j
-        SI r MOD 3 = 0 ENTONCES
-            ESCRIBIR (r)
-        FIN_SI
-    FIN_DESDE
-FIN_DESDE
