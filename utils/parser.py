@@ -41,6 +41,10 @@ class PseudoCodeParserBase:
         r"escribir\s+": "print"
     }
 
+    _REDUNDANT = (
+        r"[ ]{0,}fin_\w+",
+    )
+
     _BEHAVIOR = {
         "range_end_inclusive": True,
         "range_step": 1
@@ -79,6 +83,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
         }
 
         self._lines = self._reduce_code()
+        self._remove_redundant_statements()
         self._parse_operators()
 
     def _reduce_code(self):
@@ -97,6 +102,21 @@ class PseudoCodeParser(PseudoCodeParserBase):
             item.strip()
             for item in self._sample.split('\n')
         ]
+
+    def _remove_redundant_statements(self):
+        """Removes redundant statements from the parsed code.
+
+        This method removes redundant statements from the parsed code using
+        the `PseudoCodeParserBase._REDUNDANT` collection.
+        """
+
+        for index, _ in enumerate(self._lines):
+            for expression in self._REDUNDANT:
+                self._lines[index] = re.sub(
+                    expression,
+                    '',
+                    self._lines[index]
+                )
 
     def _parse_operators(self):
         """Converts pseudo code symbols Python ones.
