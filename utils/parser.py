@@ -140,7 +140,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
         """
 
         line = line.split(' ')
-        range_end = int(line[4]) + self._BEHAVIOR.get("range_end_inclusive")
+        range_end = int(line[-2]) + self._BEHAVIOR.get("range_end_inclusive")
 
         return f"for {line[1]} in range({line[3]}, {range_end}):"
 
@@ -203,3 +203,4 @@ class PseudoCodeParser(PseudoCodeParserBase):
                 nline = line
 
             self._parsed_code += f"{' ' * self._spacing.get(str(index))}{nline}\n"
+
