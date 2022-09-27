@@ -26,15 +26,15 @@ class PseudoCodeParserBase:
         rf"{_SP}={_SP}": " == ",         # Equal to
         rf"{_SP}<{_SP}-{_SP}": " = ",    # Asignment.
         rf"{_SP}<{_SP}>{_SP}": " != ",   # Different from.
-        rf"{_SP}mod{_SP}": " % ",  #  Modulus.
-        rf"{_SP}\+{_SP}": " + ",  #  Addition.
-        rf"{_SP}\*{_SP}": " * ",  #  Multiplication.
-        rf"{_SP}\/{_SP}": " / ",  #  Division.
-        rf"{_SP}\-{_SP}": " - ",  #  Subtraction.
-        rf"{_SP}\<{_SP}": " < ",  #  Lower than.
-        rf"{_SP}\>{_SP}": " > ",  #  Greater than.
+        rf"{_SP}mod{_SP}": " % ",        #  Modulus.
+        rf"{_SP}\+{_SP}": " + ",         #  Addition.
+        rf"{_SP}\*{_SP}": " * ",         #  Multiplication.
+        rf"{_SP}\/{_SP}": " / ",         #  Division.
+        rf"{_SP}\-{_SP}": " - ",         #  Subtraction.
+        rf"{_SP}\<{_SP}": " < ",         #  Lower than.
+        rf"{_SP}\>{_SP}": " > ",         #  Greater than.
         rf"{_SP}\<{_SP}={_SP}": " <= ",  #  Lower than or equal to.
-        rf"{_SP}\>{_SP}={_SP}": " >= "  #  Greater than or equal to.
+        rf"{_SP}\>{_SP}={_SP}": " >= "   #  Greater than or equal to.
     }
 
     _STATEMENTS = {
@@ -45,8 +45,6 @@ class PseudoCodeParserBase:
         "range_end_inclusive": True,
         "range_step": 1
     }
-
-    _TEMP_OUTPUT = "temp.py"
 
 
 class PseudoCodeParser(PseudoCodeParserBase):
@@ -66,6 +64,10 @@ class PseudoCodeParser(PseudoCodeParserBase):
             raise TypeError("Sample must be a string")
 
         self._sample = value
+
+    @property
+    def parsed_code(self):
+        return self._parsed_code
 
     def __init__(self, sample: str):
         self._sample = sample.lower()
@@ -104,9 +106,9 @@ class PseudoCodeParser(PseudoCodeParserBase):
         """
 
         for index, _ in enumerate(self._lines):
-            for symbol in self._SYMBOLS:
+            for symbol in self._OPERATORS:
                 self._lines[index] = self._lines[index].replace(
-                    symbol, self._SYMBOLS.get(symbol)
+                    symbol, self._OPERATORS.get(symbol)
                 )
 
     def _parse_for_statement(self, line: str):
@@ -184,7 +186,7 @@ class PseudoCodeParser(PseudoCodeParserBase):
         later executed.
         """
 
-        output = open(f"./{self._TEMP_OUTPUT}", mode='w', encoding="utf-8")
+        self._parsed_code = ''
 
         for index, line in enumerate(self._lines):
             nline = ''
@@ -198,9 +200,4 @@ class PseudoCodeParser(PseudoCodeParserBase):
             else:
                 nline = line
 
-            output.write(f"{' ' * self._spacing.get(str(index))}{nline}\n")
-
-        output.close()
-
-        os.system(f"python3 {self._TEMP_OUTPUT}")
-        os.remove(f"./{self._TEMP_OUTPUT}")
+            self._parsed_code += f"{' ' * self._spacing.get(str(index))}{nline}\n"
