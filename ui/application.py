@@ -1,13 +1,16 @@
 import sys
+import re
+import traceback
 from io import StringIO
 
-from PyQt6.QtGui import QPixmap, QScreen
+from PyQt6.QtGui import QPixmap, QScreen, QFont
 from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMainWindow,
                              QPushButton, QScrollArea, QStackedLayout,
-                             QTextEdit, QVBoxLayout, QWidget)
+                             QTextEdit, QVBoxLayout, QWidget, QGridLayout, QScrollArea)
 from utils.parser import PseudoCodeParser
 
-from ui.labels import Title, Subtitle, Footer
+from ui.labels import Title, Subtitle, Text, Footer
+from ui.text_boxes import CodeField
 
 
 class TextInputWindow(QMainWindow):
@@ -16,72 +19,103 @@ class TextInputWindow(QMainWindow):
         "title": "Pseudo Code Parser · Text Mode",
         "clear_button": "Clear input",
         "exec_button": "Execute code",
-        "code_output": "Code execution output:\n\n",
-        "error_output": "Code execution status:\n\n"
+        "code_output": "Code execution output:",
+        "exec_status": "Code execution status:"
     }
 
-    def __init__(self, main_window):
+    def __init__(self, layout_parent):
         super().__init__()
+        self.layout_parent = layout_parent
 
-        self.main_window = main_window
-
+        # Window title and central widget:
         self.setWindowTitle(self.HEADERS.get("title"))
-        self.widget = QWidget()
+        self.central_widget = QWidget()
 
-        # Code input field:
-        self.code_input = QTextEdit()
-        self.code_input.textChanged.connect(self.parse_input)
+        # Code input and output fields:
+        self.code_input = CodeField("Enter your code here...", False)
+        self.code_output = CodeField("Parsed code will appear here...", False)
 
-        # Code output field:
-        self.code_output = QTextEdit()
+        self.code_input.text.textChanged.connect(self.parse_input)
+
+        self.exec_output = Text(self.HEADERS.get("code_output"))
+        self.exec_status = Text(self.HEADERS.get("exec_status"))
+
+        self.scroll_1 = CodeField(
+            "Code execution output will be displayed here...", True
+        )
+        self.scroll_2 = CodeField(
+            "Code execution status will be displayed here...", True
+        )
 
         # Control buttons:
         self.clear_button = QPushButton(self.HEADERS.get("clear_button"))
-        self.clear_button.clicked.connect(self.code_input.clear)
-        self.clear_button.clicked.connect(self.code_output.clear)
+        self.clear_button.clicked.connect(self.code_input.text.clear)
+        self.clear_button.clicked.connect(self.code_output.text.clear)
+        self.clear_button.clicked.connect(self.scroll_1.text.clear)
+        self.clear_button.clicked.connect(self.scroll_2.text.clear)
 
         self.execute_button = QPushButton(self.HEADERS.get("exec_button"))
         self.execute_button.clicked.connect(self.execute_code)
 
         # Execution output field:
-        self.exec_output = QLabel(self.HEADERS.get("code_output"))
-        self.exec_error = QLabel(self.HEADERS.get("error_output"))
+
+        # TODO: move this to labels.py
+        self.exec_output.setFont(QFont("Arial", 14, QFont.Weight.Normal))
+        self.exec_status.setFont(QFont("Arial", 14, QFont.Weight.Normal))
+
+        self.exec_output.setContentsMargins(5, 10, 0, 5)
+        self.exec_status.setContentsMargins(5, 10, 0, 5)
 
         # Layout settings:
+        self.control_area = QHBoxLayout()
         self.input_area = QHBoxLayout()
-        self.output_area = QHBoxLayout()
+        self.output_area = QGridLayout()
         self.window_area = QVBoxLayout()
+
+        self.control_area.addWidget(self.clear_button)
+        self.control_area.addWidget(self.execute_button)
 
         self.input_area.addWidget(self.code_input)
         self.input_area.addWidget(self.code_output)
 
-        self.output_area.addWidget(self.exec_output)
-        self.output_area.addWidget(self.exec_error)
+        self.output_area.addWidget(self.exec_output, 0, 0)
+        self.output_area.addWidget(self.exec_status, 0, 1)
 
-        self.window_area.addWidget(self.clear_button)
-        self.window_area.addWidget(self.execute_button)
+        self.output_area.setContentsMargins(0, 0, 0, 0)
+
+        self.output_area.addWidget(self.scroll_1, 1, 0)
+        self.output_area.addWidget(self.scroll_2, 1, 1)
+
+        # reduce separation between sct_2 and exec_status
+        self.output_area.setRowMinimumHeight(1, 0)
+        self.output_area.setRowMinimumHeight(2, 0)
+        self.output_area.setVerticalSpacing(10)
+        self.output_area.setContentsMargins(0, 0, 0, 0)
+
+        self.window_area.addLayout(self.control_area)
         self.window_area.addLayout(self.input_area)
         self.window_area.addLayout(self.output_area)
 
         # Main widget settings:
-        self.widget.setLayout(self.window_area)
-        self.setCentralWidget(self.widget)
+        self.central_widget.setLayout(self.window_area)
+        self.setCentralWidget(self.central_widget)
 
-        # Screen resizing:
+        # Display settings:
         screen = QScreen.geometry(QApplication.primaryScreen())
         self.resize(int(screen.width() * .8), int(screen.height() * .8))
 
     def parse_input(self):
+        # TODO: set label title in the constructor:
         self.exec_output.setText(self.HEADERS.get("code_output"))
-        parser = PseudoCodeParser(self.code_input.toPlainText())
+        parser = PseudoCodeParser(self.code_input.text.toPlainText())
         parser.parse()
-        self.code_output.setText(parser.parsed_code)
+        self.code_output.text.setText(parser.parsed_code)
 
     def execute_code(self):
         # Output retrieval and standard output redirection:
         tmp = sys.stdout
         sys.stdout = redirect = StringIO()
-        code_string = self.code_output.toPlainText()
+        code_string = self.code_output.text.toPlainText()
         error_string = "OK"
 
         try:
@@ -94,26 +128,26 @@ class TextInputWindow(QMainWindow):
                 exec_string = "No executable code found."
 
         except Exception as exception:
+
             exec_string = ''
-            error_string = f"Error: {exception}"
+            error_string = f"{Exception.__name__}:\n    {exception}\n\n" \
+                + re.sub(
+                    r"(\s*)File(.*)(\s*)exec\(code_string\)", '',
+                    traceback.format_exc()
+                ).replace("  ", "    ")
 
         finally:
             # Standard output restoration:
             sys.stdout = tmp
 
-            # Label text update:
-            self.exec_output.setText(
-                self.HEADERS.get("code_output")
-                + exec_string
-            )
+            # Code execution output update:
+            self.scroll_1.text.setText(exec_string)
 
-            self.exec_error.setText(
-                self.HEADERS.get("error_output")
-                + error_string
-            )
+            # Code execution status output update:
+            self.scroll_2.text.setText(error_string)
 
     def closeEvent(self, event):
-        self.main_window.reset_layout(event)
+        self.layout_parent.reset_layout(event)
         event.accept()
 
 
@@ -123,9 +157,10 @@ class InformationWindow(QMainWindow):
         "title": "Pseudo Code Parser · Usage Information"
     }
 
-    def __init__(self, main_window):
+    def __init__(self, layout_parent):
         super().__init__()
-        self.main_window = main_window
+        self.layout_parent = layout_parent
+
         self.setWindowTitle(self.HEADERS.get("title"))
 
         widget = QWidget()
@@ -176,7 +211,7 @@ Image mode is yet to be implemented. Stay tuned!""")
         self.resize(int(screen.width() * .6), int(screen.height() * .8))
 
     def closeEvent(self, event):
-        self.main_window.reset_layout(event)
+        self.layout_parent.reset_layout(event)
         event.accept()
 
 
