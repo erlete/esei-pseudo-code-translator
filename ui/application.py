@@ -69,6 +69,7 @@ class TextInputWindow(QMainWindow):
 
         # Screen resizing:
         screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(int(screen.width() * .8), int(screen.height() * .8))
 
     def parse_input(self):
         self.exec_output.setText(self.HEADERS.get("code_output"))
@@ -172,6 +173,7 @@ Image mode is yet to be implemented. Stay tuned!""")
         self.centralWidget().setWidget(widget)
 
         screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(int(screen.width() * .6), int(screen.height() * .8))
 
     def closeEvent(self, event):
         self.main_window.reset_layout(event)
@@ -249,6 +251,7 @@ class MainWindow(QMainWindow):
 
         # Screen resizing:
         screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(int(screen.width() * .4), int(screen.height() * .6))
         # prevent resizing
         self.setFixedSize(self.size())
 
