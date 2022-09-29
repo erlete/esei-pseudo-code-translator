@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         self.window_2 = TextInputWindow(self)
 
         header_1 = Title(self)
-        header_1.setPixmap(QPixmap("media/logo_text_1.png"))
+        header_1.setPixmap(QPixmap("./media/logo_text.png"))
         header_1.setScaledContents(True)
 
         header_2 = Subtitle(
