@@ -16,10 +16,18 @@ class TextInputWindow(QMainWindow):
 
     HEADERS = {
         "title": "Pseudo Code Parser · Text Mode",
+
         "clear_button": "Clear input",
         "exec_button": "Execute code",
-        "code_output": "Code execution output:",
-        "exec_status": "Code execution status:"
+
+        "code_input_label": "Code input:",
+        "code_input_placeholder": "Enter your code here...",
+        "code_output_label": "Code parsing output:",
+        "code_output_placeholder": "Parsed code will be displayed here...",
+        "exec_output_label": "Code execution output:",
+        "exec_output_placeholder": "Code execution output will be displayed here...",
+        "exec_status_label": "Code execution status:",
+        "exec_status_placeholder": "Code execution status will be displayed here..."
     }
 
     def __init__(self, layout_parent):
