@@ -211,7 +211,19 @@ class PseudoCodeParser(PseudoCodeParserBase):
             ...
         """
 
-        line = line.split(' ')
+        args = line.split(' ')
+
+        if args[0] == "si_no":
+            return "else:"
+
+        if len(args) >= 6 and (f" {args[2]} " in self._OPERATORS.values()
+                and f" {args[4]} " in self._OPERATORS.values()):
+            return f"if {args[1]} {args[2]} {args[3]} {args[4]} {args[5]}:"
+
+        elif len(args) >= 4 and f" {args[2]} " in self._OPERATORS.values():
+            return f"if {args[1]} {args[2]} {args[3]}:"
+
+        return line
 
         return f"if {line[1]} {line[2]} {line[3]} {line[4]} {line[5]}:"
 
