@@ -38,73 +38,64 @@ class TextInputWindow(QMainWindow):
         self.setWindowTitle(self.HEADERS.get("title"))
         self.central_widget = QWidget()
 
-        # Code input and output fields:
-        self.code_input = CodeField("Enter your code here...", False)
-        self.code_output = CodeField("Parsed code will appear here...", False)
+        # Input/output fields' labels:
+        self.code_input_label = TextBoxLabel(
+            self.HEADERS.get("code_input_label"))
+        self.code_output_label = TextBoxLabel(
+            self.HEADERS.get("code_output_label"))
+        self.exec_output_label = TextBoxLabel(
+            self.HEADERS.get("exec_output_label"))
+        self.exec_status_label = TextBoxLabel(
+            self.HEADERS.get("exec_status_label"))
 
+        # Input/output fields' text boxes:
+        self.code_input = CodeField(
+            self.HEADERS.get("code_input_placeholder"), False)
+        self.code_output = CodeField(
+            self.HEADERS.get("code_output_placeholder"), False)
+        self.exec_output = CodeField(
+            self.HEADERS.get("exec_output_placeholder"), True)
+        self.exec_status = CodeField(
+            self.HEADERS.get("exec_status_placeholder"), True)
+
+        # Input/output fields' events:
         self.code_input.text.textChanged.connect(self.parse_input)
-
-        self.exec_output = Text(self.HEADERS.get("code_output"))
-        self.exec_status = Text(self.HEADERS.get("exec_status"))
-
-        self.scroll_1 = CodeField(
-            "Code execution output will be displayed here...", True
-        )
-        self.scroll_2 = CodeField(
-            "Code execution status will be displayed here...", True
-        )
 
         # Control buttons:
         self.clear_button = QPushButton(self.HEADERS.get("clear_button"))
+        self.execute_button = QPushButton(self.HEADERS.get("exec_button"))
+
+        # Control buttons' events:
         self.clear_button.clicked.connect(self.code_input.text.clear)
         self.clear_button.clicked.connect(self.code_output.text.clear)
-        self.clear_button.clicked.connect(self.scroll_1.text.clear)
-        self.clear_button.clicked.connect(self.scroll_2.text.clear)
-
-        self.execute_button = QPushButton(self.HEADERS.get("exec_button"))
+        self.clear_button.clicked.connect(self.exec_output.text.clear)
+        self.clear_button.clicked.connect(self.exec_status.text.clear)
         self.execute_button.clicked.connect(self.execute_code)
 
-        # Execution output field:
+        # Layouts:
+        layout = QGridLayout()
+        layout.setRowMinimumHeight(2, 0)
+        layout.setVerticalSpacing(10)
+        layout.setContentsMargins(20, 20, 20, 20)
 
-        # TODO: move this to labels.py
-        self.exec_output.setFont(QFont("Arial", 14, QFont.Weight.Normal))
-        self.exec_status.setFont(QFont("Arial", 14, QFont.Weight.Normal))
+        # Control area (top):
+        layout.addWidget(self.clear_button, 0, 0)
+        layout.addWidget(self.execute_button, 0, 1)
 
-        self.exec_output.setContentsMargins(5, 10, 0, 5)
-        self.exec_status.setContentsMargins(5, 10, 0, 5)
+        # Input/output area (middle):
+        layout.addWidget(self.code_input_label, 1, 0)
+        layout.addWidget(self.code_output_label, 1, 1)
+        layout.addWidget(self.code_input, 2, 0)
+        layout.addWidget(self.code_output, 2, 1)
 
-        # Layout settings:
-        self.control_area = QHBoxLayout()
-        self.input_area = QHBoxLayout()
-        self.output_area = QGridLayout()
-        self.window_area = QVBoxLayout()
+        # Output area (bottom):
+        layout.addWidget(self.exec_output_label, 3, 0)
+        layout.addWidget(self.exec_status_label, 3, 1)
+        layout.addWidget(self.exec_output, 4, 0)
+        layout.addWidget(self.exec_status, 4, 1)
 
-        self.control_area.addWidget(self.clear_button)
-        self.control_area.addWidget(self.execute_button)
-
-        self.input_area.addWidget(self.code_input)
-        self.input_area.addWidget(self.code_output)
-
-        self.output_area.addWidget(self.exec_output, 0, 0)
-        self.output_area.addWidget(self.exec_status, 0, 1)
-
-        self.output_area.setContentsMargins(0, 0, 0, 0)
-
-        self.output_area.addWidget(self.scroll_1, 1, 0)
-        self.output_area.addWidget(self.scroll_2, 1, 1)
-
-        # reduce separation between sct_2 and exec_status
-        self.output_area.setRowMinimumHeight(1, 0)
-        self.output_area.setRowMinimumHeight(2, 0)
-        self.output_area.setVerticalSpacing(10)
-        self.output_area.setContentsMargins(0, 0, 0, 0)
-
-        self.window_area.addLayout(self.control_area)
-        self.window_area.addLayout(self.input_area)
-        self.window_area.addLayout(self.output_area)
-
-        # Main widget settings:
-        self.central_widget.setLayout(self.window_area)
+        # Central widget settings:
+        self.central_widget.setLayout(layout)
         self.setCentralWidget(self.central_widget)
 
         # Display settings:
