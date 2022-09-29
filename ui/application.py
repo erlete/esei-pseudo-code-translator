@@ -103,10 +103,10 @@ class TextInputWindow(QMainWindow):
         self.resize(int(screen.width() * .8), int(screen.height() * .8))
 
     def parse_input(self):
-        # TODO: set label title in the constructor:
-        self.exec_output.setText(self.HEADERS.get("code_output"))
-        parser = PseudoCodeParser(self.code_input.text.toPlainText())
-        parser.parse()
+        (parser := PseudoCodeParser(
+            self.code_input.text.toPlainText()
+        )).parse()
+
         self.code_output.text.setText(parser.parsed_code)
 
     def execute_code(self):
