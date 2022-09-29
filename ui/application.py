@@ -1,16 +1,15 @@
-import sys
 import re
+import sys
 import traceback
 from io import StringIO
 
-from PyQt6.QtGui import QPixmap, QScreen, QFont
-from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMainWindow,
-                             QPushButton, QScrollArea, QStackedLayout,
-                             QTextEdit, QVBoxLayout, QWidget, QGridLayout, QScrollArea)
-from utils.internal.parser import PseudoCodeParser
-
-from utils.interface.labels import Title, Subtitle, Text, Footer
+from PyQt6.QtGui import QPixmap, QScreen
+from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
+                             QMainWindow, QPushButton, QScrollArea,
+                             QStackedLayout, QTextEdit, QVBoxLayout, QWidget)
+from utils.interface.labels import Footer, Subtitle, TextBoxLabel, Title
 from utils.interface.text_boxes import CodeField
+from utils.internal.parser import PseudoCodeParser
 
 
 class TextInputWindow(QMainWindow):
