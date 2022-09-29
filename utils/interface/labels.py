@@ -68,3 +68,12 @@ class Footer(Text):
         self.font.setPointSize(8)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setContentsMargins(8, 8, 8, 8)
+
+
+class TextBoxLabel(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.font = QFont("Arial", 14, QFont.Weight.Normal)
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.setContentsMargins(5, 10, 0, 5)
