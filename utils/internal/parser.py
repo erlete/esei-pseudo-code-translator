@@ -9,7 +9,6 @@ Author:
 """
 
 
-import os
 import re
 
 
@@ -175,10 +174,22 @@ class PseudoCodeParser(PseudoCodeParserBase):
         key set to `True` or `False`.
         """
 
+        step = 1
+        increment = self._BEHAVIOR.get("range_end_inclusive")
         line = line.split(' ')
-        range_end = int(line[-2]) + self._BEHAVIOR.get("range_end_inclusive")
 
-        return f"for {line[1]} in range({line[3]}, {range_end}):"
+        # Check for 6 elements and numeric start/end values:
+        if len(line) >= 6 and (line[3] + line[5]).isnumeric():
+
+            # Check for 8 elements containing keyword and numeric step value:
+            if len(line) >= 8 and "paso" in line and line[7].isnumeric():
+                step = int(line[7])
+
+            end = int(line[5]) + increment
+
+            return f"for {line[1]} in range({line[3]}, {end}, {step}):"
+
+        return ' '.join(line)
 
     def _parse_if_statement(self, line: str):
         """Converts pseudo code "if" statements into Python ones.
@@ -239,4 +250,3 @@ class PseudoCodeParser(PseudoCodeParserBase):
                 nline = line
 
             self._parsed_code += f"{' ' * self._spacing.get(str(index))}{nline}\n"
-
