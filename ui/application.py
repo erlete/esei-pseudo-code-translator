@@ -110,39 +110,40 @@ class TextInputWindow(QMainWindow):
         self.code_output.text.setText(parser.parsed_code)
 
     def execute_code(self):
-        # Output retrieval and standard output redirection:
+        # Standard output redirection:
         tmp = sys.stdout
         sys.stdout = redirect = StringIO()
-        code_string = self.code_output.text.toPlainText()
-        error_string = "OK"
 
+        # Input retrieval:
+        code_input = self.code_output.text.toPlainText()
+        code_status = "OK"
+
+        # Code execution:
         try:
-            # If there is code to execute:
-            if code_string:
-                exec(code_string)
-                exec_string = f"{redirect.getvalue().strip()}"
-
+            if code_input:  # If there is code to execute.
+                exec(code_input)
+                code_output = f"{redirect.getvalue().strip()}"
             else:
-                exec_string = "No executable code found."
+                code_output = "No executable code found."
 
+        # Exception + traceback display:
         except Exception as exception:
+            code_output = ''
 
-            exec_string = ''
-            error_string = f"{Exception.__name__}:\n    {exception}\n\n" \
-                + re.sub(
-                    r"(\s*)File(.*)(\s*)exec\(code_string\)", '',
-                    traceback.format_exc()
-                ).replace("  ", "    ")
+            filtered_traceback = re.sub(
+                r"(\s*)File(.*)(\s*)exec\(code_string\)", '',
+                traceback.format_exc()
+            ).replace("  ", "    ")
 
+            code_status = f"{Exception.__name__}:\n    {exception}\n\n" \
+                + f"{filtered_traceback}"
+
+        # Output fields' update:
         finally:
-            # Standard output restoration:
-            sys.stdout = tmp
+            self.exec_output.text.setText(code_output)
+            self.exec_status.text.setText(code_status)
 
-            # Code execution output update:
-            self.scroll_1.text.setText(exec_string)
-
-            # Code execution status output update:
-            self.scroll_2.text.setText(error_string)
+            sys.stdout = tmp  # Restores standard output.
 
     def closeEvent(self, event):
         self.layout_parent.reset_layout(event)
