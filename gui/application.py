@@ -107,7 +107,8 @@ class TextInputWindow(QMainWindow):
             self.code_input.text.toPlainText()
         )).parse()
 
-        self.code_output.text.setText(parser.parsed_code)
+        # Strip the code and add a single newline at the end:
+        self.code_output.text.setText(parser.parsed_code.strip() + '\n')
 
     def execute_code(self):
         # Standard output redirection:
@@ -140,8 +141,8 @@ class TextInputWindow(QMainWindow):
 
         # Output fields' update:
         finally:
-            self.exec_output.text.setText(code_output)
-            self.exec_status.text.setText(code_status)
+            self.exec_output.text.setText(code_output.strip())
+            self.exec_status.text.setText(code_status.strip())
 
             sys.stdout = tmp  # Restores standard output.
 
