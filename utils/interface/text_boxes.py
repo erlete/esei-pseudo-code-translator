@@ -18,7 +18,9 @@ class CodeField(QScrollArea):
         self._text.setPlaceholderText(placeholder_text)
         self._text.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         self._text.keyPressEvent = self.keyPressEvent
-        self._text.setTabStopDistance(8 * self._text.fontMetrics().horizontalAdvance(' '))
+        self._text.setTabStopDistance(
+            8 * self._text.fontMetrics().horizontalAdvance(' ')
+        )
 
         self.setWidget(self._text)
 
