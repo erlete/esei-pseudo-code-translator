@@ -13,9 +13,20 @@ from PyQt6.QtWidgets import QApplication
 from gui.application import MainWindow
 
 
-app = QApplication(sys.argv)
+if sys.argv[-1] == "debug":
+    from utils.internal.parser import PseudoCodeParser
 
-window = MainWindow()
-window.show()
+    sample = (f := open("samples/sample_2.txt", "r")).read()
+    parser = PseudoCodeParser(sample)
+    parser.parse()
 
-app.exec()
+    print(parser.parsed_code)
+
+    f.close()
+else:
+    app = QApplication(sys.argv)
+
+    window = MainWindow()
+    window.show()
+
+    app.exec()
