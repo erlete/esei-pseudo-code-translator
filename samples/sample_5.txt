@@ -1,0 +1,16 @@
+ALGORITMO penepene
+CONSTANTES
+    tam : Entero = 69
+    nome : Cadena[tam] = "owo"
+TIPOS
+    arr_real = array[tam] de Real
+VARIABLES
+    vec : arr_real
+    i : Entero
+INICIO
+    DESDE i <- 0 HASTA tam - 1 HACER
+        vec[i] <- 69 * i
+        ESCRIBIR(vec[i])
+    FIN_DESDE
+FIN
+

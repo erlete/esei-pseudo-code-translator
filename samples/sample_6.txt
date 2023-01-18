@@ -1,0 +1,7 @@
+ALGORITMO TEST_DO_WHILE
+VARIABLES
+x : Entero = 0
+HACER
+    x <- x+1
+    ESCRIBIR(x)
+MIENTRAS x<10

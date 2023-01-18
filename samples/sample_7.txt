@@ -1,0 +1,19 @@
+ALGORITMO intercambio
+VARIABLES
+    v1, v2 : Entero
+INICIO
+    LEER (v1)
+    LEER (v2)
+    intercambiar (v1, v2)
+    ESCRIBIR (v1, v2)
+FIN
+
+PROCEDIMIENTO intercambiar (E/S Entero: a,E/S Entero : b)
+VARIABLE
+    temp : Entero
+INICIO
+    temp <- a
+    a <- b
+    b <- temp
+FIN_PROCEDIMIENTO
+

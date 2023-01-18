@@ -1,0 +1,36 @@
+
+//Comentario de una línea
+
+// /*Comentario
+// multi
+// linea*/
+MIENTRAS x < 10 HACER
+	DESDE i <- 0 HASTA 20 PASO 7 HACER
+		ESCRIBIR(i)
+	x <- x+1
+	FIN_DESDE
+FIN_MIENTRAS
+
+SI 5=4 ENTONCES
+	ESCRIBIR("cosa 1")
+x <- 5
+x <- x MOD 2
+
+SI_NO ENTONCES
+	ESCRIBIR("cosa 2")
+FIN_SI
+SI 5=4 ENTONCES
+	ESCRIBIR("cosa 3")
+SI_NO
+	ESCRIBIR("cosa 4")
+FIN_SI
+
+CASO x*3 SEA
+	1 : ESCRIBIR("X POR 3 ES 1")
+	2 : ESCRIBIR("X POR 3 ES 2")
+	3 : ESCRIBIR("X POR 3 ES 3")
+	4 : ESCRIBIR("X POR 3 ES 4")
+	5 : ESCRIBIR("X POR 3 ES 5")
+SI_NO
+	ESCRIBIR("X POR 3 ES UN VALOR INESPERADO")
+FIN_CASO
