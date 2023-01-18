@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTextEdit, QScrollArea
+from PyQt6.QtWidgets import QScrollArea, QTextEdit
 
 
 class CodeField(QScrollArea):

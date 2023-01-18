@@ -5,17 +5,14 @@ Author:
  - Paulo Sanchez (@erlete)
 """
 
-
 import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from gui.application import MainWindow
-
+from src.core.parser import PseudoCodeParser
+from src.gui.application import MainWindow
 
 if sys.argv[-1] == "debug":
-    from utils.internal.parser import PseudoCodeParser
-
     sample = (f := open("samples/sample_2.txt", "r")).read()
     parser = PseudoCodeParser(sample)
     parser.parse()

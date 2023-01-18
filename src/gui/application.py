@@ -7,9 +7,10 @@ from PyQt6.QtGui import QPixmap, QScreen
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
                              QMainWindow, QPushButton, QScrollArea,
                              QStackedLayout, QVBoxLayout, QWidget)
-from utils.interface.labels import Footer, Subtitle, TextBoxLabel, Title
-from utils.interface.text_boxes import CodeField
-from utils.internal.parser import PseudoCodeParser
+
+from ..core.parser import PseudoCodeParser
+from .labels import Footer, Subtitle, TextBoxLabel, Title
+from .text_boxes import CodeField
 
 
 class TextInputWindow(QMainWindow):
