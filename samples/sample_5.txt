@@ -13,4 +13,3 @@ INICIO
         ESCRIBIR(vec[i])
     FIN_DESDE
 FIN
-

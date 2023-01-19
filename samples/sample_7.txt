@@ -16,4 +16,3 @@ INICIO
     a <- b
     b <- temp
 FIN_PROCEDIMIENTO
-

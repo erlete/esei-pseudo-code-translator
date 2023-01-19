@@ -13,7 +13,7 @@ INICIO
 		ESCRIBIR("cosa 1")
 	x <- 5
 	x <- x MOD 2
-	
+
 	SI_NO ENTONCES
 		ESCRIBIR("cosa 2")
 	FIN_SI
