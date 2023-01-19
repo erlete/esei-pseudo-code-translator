@@ -43,6 +43,9 @@ class Block(InterpreterConfig):
         children (list[Block]): list of child blocks.
     """
 
+    HEADER: str | None = None
+    FOOTER: str | None = None
+
     def __init__(self, lines: list[str | Block], start: int, end: int) -> None:
         """Initialize a new block.
 
@@ -161,7 +164,7 @@ class Block(InterpreterConfig):
         Returns:
             str: string representation of the block.
         """
-        return (f"Block({self.start}, {self.end})")
+        return f"{self.__class__.__name__}({self.start}, {self.end})"
 
     def __str__(self) -> str:
         """Return the string representation of the block.
@@ -289,3 +292,55 @@ class Block(InterpreterConfig):
             int: hash of the block.
         """
         return hash((self.start, self.end))
+
+
+class ForLoop(Block):
+
+    HEADER = r"^desde\s+"
+    FOOTER = r"^fin_desde$"
+
+
+class WhileLoop(Block):
+
+    HEADER = r"^mientras\s+"
+    FOOTER = r"^fin_mientras$"
+
+
+class DoWhileLoop(Block):
+
+    HEADER = r"^hacer$"
+    FOOTER = r"^mientras\s+"
+
+
+class IfStatement(Block):
+
+    HEADER = r"^si\s+"
+    FOOTER = r"^fin_si$"
+
+
+class MatchStatement(Block):
+
+    HEADER = r"^caso\s+"
+    FOOTER = r"^fin_caso$"
+
+
+class Function(Block):
+
+    HEADER = r"^.+funcion"
+    FOOTER = r"^fin_funcion$"
+
+
+class Procedure(Block):
+
+    HEADER = r"^.+procedimiento"
+    FOOTER = r"^fin_procedimiento$"
+
+
+class Main(Function):
+
+    HEADER = r"^inicio$"
+    FOOTER = r"^fin$"
+
+
+TYPES = (ForLoop, WhileLoop, DoWhileLoop, IfStatement,
+         MatchStatement, Function, Procedure, Main)
