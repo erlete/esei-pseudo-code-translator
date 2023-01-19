@@ -5,7 +5,9 @@ Author:
 """
 
 
-from .block import Block
+import regex as re
+
+from .block import Block, TYPES
 from .logger import Logger
 
 
@@ -24,13 +26,6 @@ class Scanner:
         BLOCK_TYPES (dict[str, tuple[str, str]]): the block types and their
             delimiters.
     """
-
-    BLOCK_TYPES = {
-        "for": ("desde ", "fin_desde"),
-        "while": ("mientras ", "fin_mientras"),
-        "if": ("si ", "fin_si"),
-        "match": ("caso ", "fin_caso")
-    }
 
     def __init__(self, code: str, log_level: int = 2) -> None:
         """Initialize a scanner instance.
@@ -52,20 +47,19 @@ class Scanner:
         program. It also sets the hierarchy of the blocks.
         """
         blocks = []
-        for block_type in self.BLOCK_TYPES:
-            header, footer = self.BLOCK_TYPES[block_type]
+        for block_type in TYPES:
 
             i = 0
             while i < len(self.lines):
                 line = self.lines[i]
                 self.logger.log(f"{i:0>3} - Analyzing line: \"{line}\"", 0)
 
-                if header in line:
+                if re.match(block_type.HEADER, line, block_type.FLAGS):
                     self.logger.log(
                         f"{i:0>3} - Found open statement. Recursing...", 0
                     )
                     blocks.extend(self._find_blocks(
-                        self.lines, header, footer, i + 1))
+                        self.lines, block_type, i + 1))
                     self.logger.log(f"{i:0>3} - Returning to root...", 0)
 
                 i += 1
@@ -73,8 +67,8 @@ class Scanner:
         self.blocks = list(set(blocks))
         self._set_hierarchy()
 
-    def _find_blocks(self, lines: list[str], header: str,
-                     footer: str, start: int) -> list[Block]:
+    def _find_blocks(self, lines: list[str],
+                     block_type, start: int) -> list[Block]:
         """Identify blocks in the code.
 
         This method is a recursive function that finds the blocks in the code
@@ -82,11 +76,12 @@ class Scanner:
 
         Args:
             lines (list[str]): the code trimmed and split into lines.
-            header (str): the header of the block.
-            footer (str): the footer of the block.
+            block_type (Block): the block type to search for.
             start (int): the line to start searching from.
         """
         blocks = []
+        header, footer = block_type.HEADER, block_type.FOOTER
+
         self.logger.log(
             f"Searching for \"{header}\" or \"{footer}\" from line {start}",
             0
@@ -101,25 +96,25 @@ class Scanner:
                 0
             )
 
-            if header in line:
+            if re.match(header, line, re.IGNORECASE | re.MULTILINE):
                 self.logger.log(
                     f"({start + i:0>3}) {i:0>3} - Found open statement. "
                     + "Recursing...",
                     0
                 )
 
-                blocks.extend(self._find_blocks(lines, header,
-                                                footer, i + start + 1))
+                blocks.extend(self._find_blocks(lines, block_type,
+                                                i + start + 1))
                 i = max(blocks, key=lambda x: x.end).end - start
 
-            if footer in line:
+            if re.match(footer, line, re.IGNORECASE | re.MULTILINE):
                 self.logger.log(
                     f"({start + i:0>3}) {i:0>3} - Found close statement. "
                     + "Returning to previous call...",
                     0
                 )
 
-                blocks.append(Block(
+                blocks.append(block_type(
                     lines[start - 1:start + i + 1],
                     start - 1,
                     start + i
