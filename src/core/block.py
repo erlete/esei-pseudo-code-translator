@@ -10,6 +10,10 @@ Author:
 
 from __future__ import annotations
 
+from typing import Any
+
+import regex as re
+
 
 class InterpreterConfig:
     """Base class for interpreter configuration.
@@ -41,10 +45,14 @@ class Block(InterpreterConfig):
         end (int): index of the last line of the block in the original code.
         parent (Block | None): parent block.
         children (list[Block]): list of child blocks.
+        HEADER (str): regular expression to match the header of the for loop.
+        FOOTER (str): regular expression to match the footer of the for loop.
+        FLAGS (int): flags to use when matching the header and footer.
     """
 
     HEADER: str | None = None
     FOOTER: str | None = None
+    FLAGS: int = re.IGNORECASE | re.MULTILINE
 
     def __init__(self, lines: list[str | Block], start: int, end: int) -> None:
         """Initialize a new block.
@@ -295,52 +303,150 @@ class Block(InterpreterConfig):
 
 
 class ForLoop(Block):
+    """For loop structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the loop.
+        FOOTER (str): regular expression to match the footer of the loop.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^desde\s+"
     FOOTER = r"^fin_desde$"
 
 
 class WhileLoop(Block):
+    """While loop structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the loop.
+        FOOTER (str): regular expression to match the footer of the loop.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^mientras\s+"
     FOOTER = r"^fin_mientras$"
 
 
 class DoWhileLoop(Block):
+    """Do-while loop structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the loop.
+        FOOTER (str): regular expression to match the footer of the loop.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^hacer$"
     FOOTER = r"^mientras\s+"
 
 
 class IfStatement(Block):
+    """If statement structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the statement.
+        FOOTER (str): regular expression to match the footer of the statement.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
 
 
 class MatchStatement(Block):
+    """Match statement structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the statement.
+        FOOTER (str): regular expression to match the footer of the statement.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^caso\s+"
     FOOTER = r"^fin_caso$"
 
 
 class Function(Block):
+    """Function structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the function.
+        FOOTER (str): regular expression to match the footer of the function.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^.+funcion"
     FOOTER = r"^fin_funcion$"
 
 
 class Procedure(Block):
+    """Procedure structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the function.
+        FOOTER (str): regular expression to match the footer of the function.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^.+procedimiento"
     FOOTER = r"^fin_procedimiento$"
 
 
 class Main(Function):
+    """Main function structural class.
+
+    Attributes:
+        start (int): start line number of the for loop.
+        end (int): end line number of the for loop.
+        lines (list): list of lines of code in the for loop.
+        parent (Block): parent block of the for loop.
+        children (list): list of children blocks of the for loop.
+        HEADER (str): regular expression to match the header of the function.
+        FOOTER (str): regular expression to match the footer of the function.
+        FLAGS (int): flags to use when matching the header and footer.
+    """
 
     HEADER = r"^inicio$"
     FOOTER = r"^fin$"
 
 
-TYPES = (ForLoop, WhileLoop, DoWhileLoop, IfStatement,
-         MatchStatement, Function, Procedure, Main)
+TYPES: Any = (
+    ForLoop, WhileLoop, DoWhileLoop, IfStatement, MatchStatement,
+    Function, Procedure, Main
+)
