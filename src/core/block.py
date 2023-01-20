@@ -91,10 +91,10 @@ class Expression(InterpreterConfig):
         return f"Expression({self.start!r})"
 
     def __eq__(self, other) -> bool:
-        return self.body == other.body
+        return str(self) == str(other)
 
     def __ne__(self, other) -> bool:
-        return self.body != other.body
+        return str(self) != str(other)
 
     def __hash__(self) -> int:
         return hash(self.body)
@@ -133,9 +133,10 @@ class Block(InterpreterConfig):
 
     HEADER: str | None = None
     FOOTER: str | None = None
+    BREAKPOINTS: list[str] | None = None
     FLAGS: int = re.IGNORECASE | re.MULTILINE
 
-    def __init__(self, lines: list[str | Block], start: int, end: int) -> None:
+    def __init__(self, lines: Any[str | Block], start: int, end: int) -> None:
         """Initialize a new block.
 
         Args:
@@ -154,16 +155,34 @@ class Block(InterpreterConfig):
         self.parent: Block | None = None
         self.children: list[Block] = list()
 
-        self._translate()
+        self._translate_delimiters()
+        self._translate_body()
 
-    def _translate(self):
-        """Translate the block to Python code.
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
 
-        This method represents the implementation of a custom translation
-        method for each one of the classes that inherit from this class. This
-        method is automatically called when the block is initialized.
+        This method is a placeholder for custom implementations of delimiter
+        translation methods. It is called in the constructor of the class.
         """
         pass
+
+    def _translate_body(self) -> None:
+        """Translate block body to Python code.
+
+        This method is a generic body translation method. It is called in the
+        constructor of the class.
+        """
+        for i, line in enumerate(self.lines):
+            if not isinstance(line, Block):
+                matches = (
+                    re.match(exp, line, self.FLAGS)
+                    for exp in [self._header, self._footer] + (
+                        self.BREAKPOINTS if self.BREAKPOINTS is not None
+                        else []
+                    )
+                )
+                if not all(matches):
+                    self.lines[i] = Expression(line)
 
     def fold(self) -> None:
         """Fold blocks that contain children blocks.
@@ -413,11 +432,12 @@ class ForLoop(Block):
     HEADER = r"^desde\s+"
     FOOTER = r"^fin_desde$"
 
-    def _translate(self) -> None:
-        """Translate the block.
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
 
-        This method is a specific implementation of the `Block._translate`
-        method. Refer to the original documentation for further information.
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
         """
         self._translate_header()
         self._translate_footer()
@@ -489,11 +509,12 @@ class WhileLoop(Block):
     HEADER = r"^mientras\s+"
     FOOTER = r"^fin_mientras$"
 
-    def _translate(self) -> None:
-        """Translate the block.
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
 
-        This method is a specific implementation of the `Block._translate`
-        method. Refer to the original documentation for further information.
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
         """
         self._translate_header()
         self._translate_footer()
@@ -562,12 +583,14 @@ class IfStatement(Block):
 
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
+    BREAKPOINTS = [r"^sino$"]
 
-    def _translate(self) -> None:
-        """Translate the block.
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
 
-        This method is a specific implementation of the `Block._translate`
-        method. Refer to the original documentation for further information.
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
         """
         self._translate_header()
         self._translate_footer()
@@ -629,7 +652,7 @@ class IfStatement(Block):
                     sub_render = line.render(indentation_level + 1)
                     lines.extend(sub_render)
             else:
-                if re.match(r"^si_no", line, self.FLAGS):
+                if re.match(r"^si_no", str(line), self.FLAGS):
                     lines.append(f"{outer_ind}else:")
                 else:
                     lines.append(f"{inner_ind}{line}")
