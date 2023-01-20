@@ -125,7 +125,6 @@ class Block(InterpreterConfig):
         outer_ind = indentation_level * spacing
         inner_ind = (indentation_level + 1) * spacing
 
-        lines: list[str] = [f"{outer_ind}{self.lines[0]}"]
         lines: list[str] = [f"{outer_ind}{self._header}"]
         for line in self.lines[1:-1]:
             if isinstance(line, Block):
@@ -137,7 +136,6 @@ class Block(InterpreterConfig):
             else:
                 lines.append(f"{inner_ind}{line}")
 
-        lines.append(f"{outer_ind}{self.lines[-1]}")
         lines.append(f"{outer_ind}{self._footer}")
         return lines
 
@@ -334,6 +332,64 @@ class ForLoop(Block):
     HEADER = r"^desde\s+"
     FOOTER = r"^fin_desde$"
 
+    def _translate(self) -> None:
+        """Translate the block.
+
+        This method is a specific implementation of the `Block._translate`
+        method. Refer to the original documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self) -> None:
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        case_1 = re.match(
+            r"^desde\s+(.+?)\s+hasta\s+(\w+)\s+paso\s+(\w+)\s+hacer$",
+            self._header,
+            self.FLAGS
+        )
+
+        case_2 = re.match(
+            r"^desde\s+(.+?)\s+hasta\s+(\w+)\s+hacer$",
+            self._header,
+            self.FLAGS
+        )
+
+        case = (case_1 if case_1 is not None else case_2).groups()
+
+        if "<-" in case[0]:
+            iterator = case[0].split('<-')[0].strip()
+            start = case[0].split('<-')[1].strip()
+            end = case[1]
+        else:
+            iterator = case[0]
+            start = case[1]
+            end = case[2]
+
+        if len(case) == 3:
+            step = case[2]
+        else:
+            step = 1
+
+        self._header = f"for {iterator} in range({start}, {end} + 1, {step}):"
+
+    def _translate_footer(self) -> None:
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._footer = re.sub(
+            r"^fin_desde$",
+            '',
+            self._footer,
+            self.FLAGS
+        )
+
 
 class WhileLoop(Block):
     """While loop structural class.
@@ -432,7 +488,6 @@ class IfStatement(Block):
         self._translate_header()
         self._translate_footer()
 
-    def _translate_header(self):
     def _translate_header(self) -> None:
         """Translate the header of the block.
 
@@ -446,7 +501,6 @@ class IfStatement(Block):
             self.FLAGS
         )
 
-    def _translate_footer(self):
     def _translate_footer(self) -> None:
         """Translate the footer of the block.
 
