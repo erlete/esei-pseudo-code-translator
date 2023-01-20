@@ -133,7 +133,7 @@ class Block(InterpreterConfig):
 
     HEADER: str | None = None
     FOOTER: str | None = None
-    BREAKPOINTS: list[str] | None = None
+    BREAKPOINTS: dict[str, str] = {}
     FLAGS: int = re.IGNORECASE | re.MULTILINE
 
     def __init__(self, lines: Any[str | Block], start: int, end: int) -> None:
@@ -176,7 +176,7 @@ class Block(InterpreterConfig):
             if not isinstance(line, Block):
                 matches = (
                     re.match(exp, line, self.FLAGS)
-                    for exp in [self._header, self._footer] + (
+                    for exp in [self._header, self._footer] + list(
                         self.BREAKPOINTS if self.BREAKPOINTS is not None
                         else []
                     )
@@ -233,8 +233,17 @@ class Block(InterpreterConfig):
                 else:
                     sub_render = line.render(indentation_level + 1)
                     lines.extend(sub_render)
+
             else:
-                lines.append(f"{inner_ind}{line}")
+                replaced = False
+                for match, replacement in self.BREAKPOINTS.items():
+                    if re.match(match, str(line), self.FLAGS):
+                        lines.append(f"{outer_ind}{replacement}")
+                        replaced = True
+                        break
+
+                if not replaced:
+                    lines.append(f"{inner_ind}{line}")
 
         lines.append(f"{outer_ind}{self._footer}")
         return lines
@@ -583,7 +592,9 @@ class IfStatement(Block):
 
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
-    BREAKPOINTS = [r"^sino$"]
+    BREAKPOINTS = {
+        r"^si_no$": "else:",
+    }
 
     def _translate_delimiters(self) -> None:
         """Translate block delimiters to Python code.
@@ -623,42 +634,6 @@ class IfStatement(Block):
             self._footer,
             self.FLAGS
         )
-
-    def render(self, indentation_level: int = 0,
-               no_recursion: bool = False) -> list[str]:
-        """Render the block.
-
-        This method is a specific implementation of the `Block.render` method.
-        Refer to the original documentation for further information.
-
-        Args:
-            indentation_level (int): indentation level of the block.
-            no_recursion (bool): if True, the children blocks will not be
-                rendered.
-
-        Returns:
-            list[str]: list of lines of code.
-        """
-        spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
-        outer_ind = indentation_level * spacing
-        inner_ind = (indentation_level + 1) * spacing
-
-        lines: list[str] = [f"{outer_ind}{self._header}"]
-        for line in self.lines[1:-1]:
-            if isinstance(line, Block):
-                if no_recursion:
-                    lines.append(f"{inner_ind}{line!r}")
-                else:
-                    sub_render = line.render(indentation_level + 1)
-                    lines.extend(sub_render)
-            else:
-                if re.match(r"^si_no", str(line), self.FLAGS):
-                    lines.append(f"{outer_ind}else:")
-                else:
-                    lines.append(f"{inner_ind}{line}")
-
-        lines.append(f"{outer_ind}{self._footer}")
-        return lines
 
 
 class MatchStatement(Block):
