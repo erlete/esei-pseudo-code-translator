@@ -31,6 +31,87 @@ class InterpreterConfig:
     INDENTATION_CHAR: str = ' '
 
 
+class Expression(InterpreterConfig):
+
+    OPERATORS = {
+        r"\/\/": '#',
+        r"\/\*": "\"\"\"",
+        r"\*\/": "\"\"\"",
+        r'(.*[^<>!])=(.*)': r"\1 == \2",
+        r"(.*?)\s*<-\s*(.*)": r"\1 = \2",
+        r"(.*?)\s*<>\s*(.*)": r"\1 != \2",
+        r"(.*?)\s*mod\s*(.*)": r"\1 % \2",
+        r"(.*?)\s*==\s*(.*)": r"\1 == \2",
+        r"\b(\w+)\s*<\s*(\w+)\b": r"\1 < \2",
+        r"\b(\w+)\s*>\s*(\w+)\b": r"\1 > \2",
+        r"(.*?)\s*<=\s*(.*)": r"\1 <= \2",
+        r"(.*?)\s*>=\s*(.*)": r"\1 >= \2",
+        r"(.*?)\s*\+\s*(.*)": r"\1 + \2",
+        r"(.*?)\s*-\s*(.*)": r"\1 - \2",
+        r"(.*?)\s*\*\s*(.*)": r"\1 * \2",
+        r"(.*?)\s*\/\s*(.*)": r"\1 / \2"
+    }
+
+    IDENTIFIERS = {
+        r"escribir\s*\((.*)\)": r"print(\1)",
+        r"leer\s*\((.*)\)": r"\1 = input('Entrada para la variable \1:')"
+    }
+
+    def __init__(self, line: str, start: int = 0) -> None:
+        self.type = None
+        self.body = line.strip()
+        self.start = start
+
+        self._translate()
+
+    def _translate(self):
+        t_operators = self._translate_operators(self.body)
+        self.body = self._translate_identifiers(t_operators)
+
+    def _translate_operators(self, code: str) -> str:
+        for expression, replacement in self.OPERATORS.items():
+            code = re.sub(expression, replacement, code)
+
+        return code
+
+    def _translate_identifiers(self, code: str) -> str:
+        for expression, replacement in self.IDENTIFIERS.items():
+            code = re.sub(expression, replacement, code)
+
+        return code
+
+    @staticmethod
+    def no_spaces(text: str) -> str:
+        return re.sub(r"\s+", "", text)
+
+    def __str__(self) -> str:
+        return self.body
+
+    def __repr__(self) -> str:
+        return f"Expression({self.start!r})"
+
+    def __eq__(self, other) -> bool:
+        return self.body == other.body
+
+    def __ne__(self, other) -> bool:
+        return self.body != other.body
+
+    def __hash__(self) -> int:
+        return hash(self.body)
+
+    def __gt__(self, other) -> bool:
+        return self.start > other.start
+
+    def __lt__(self, other) -> bool:
+        return self.start < other.start
+
+    def __ge__(self, other) -> bool:
+        return self.start >= other.start
+
+    def __le__(self, other) -> bool:
+        return self.start <= other.start
+
+
 class Block(InterpreterConfig):
     """Structural class for code organization and rendering.
 
