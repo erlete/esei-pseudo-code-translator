@@ -68,8 +68,21 @@ class Block(InterpreterConfig):
         self.lines = lines
         self.start = start
         self.end = end
+        self._header = self.lines[0]
+        self._footer = self.lines[-1]
         self.parent: Block | None = None
         self.children: list[Block] = list()
+
+        self._translate()
+
+    def _translate(self):
+        """Translate the block to Python code.
+
+        This method represents the implementation of a custom translation
+        method for each one of the classes that inherit from this class. This
+        method is automatically called when the block is initialized.
+        """
+        pass
 
     def fold(self) -> None:
         """Fold blocks that contain children blocks.
@@ -113,6 +126,7 @@ class Block(InterpreterConfig):
         inner_ind = (indentation_level + 1) * spacing
 
         lines: list[str] = [f"{outer_ind}{self.lines[0]}"]
+        lines: list[str] = [f"{outer_ind}{self._header}"]
         for line in self.lines[1:-1]:
             if isinstance(line, Block):
                 if no_recursion:
@@ -124,6 +138,7 @@ class Block(InterpreterConfig):
                 lines.append(f"{inner_ind}{line}")
 
         lines.append(f"{outer_ind}{self.lines[-1]}")
+        lines.append(f"{outer_ind}{self._footer}")
         return lines
 
     def is_root(self) -> bool:
