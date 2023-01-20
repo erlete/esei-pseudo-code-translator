@@ -352,6 +352,41 @@ class WhileLoop(Block):
     HEADER = r"^mientras\s+"
     FOOTER = r"^fin_mientras$"
 
+    def _translate(self) -> None:
+        """Translate the block.
+
+        This method is a specific implementation of the `Block._translate`
+        method. Refer to the original documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self) -> None:
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._header = re.sub(
+            r"^mientras\s+(.*?)\s+hacer$",
+            r"while \1:",
+            self._header,
+            self.FLAGS
+        )
+
+    def _translate_footer(self) -> None:
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._footer = re.sub(
+            r"^fin_mientras$",
+            '',
+            self._footer,
+            self.FLAGS
+        )
+
 
 class DoWhileLoop(Block):
     """Do-while loop structural class.
@@ -388,7 +423,7 @@ class IfStatement(Block):
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
 
-    def _translate(self):
+    def _translate(self) -> None:
         """Translate the block.
 
         This method is a specific implementation of the `Block._translate`
@@ -398,6 +433,7 @@ class IfStatement(Block):
         self._translate_footer()
 
     def _translate_header(self):
+    def _translate_header(self) -> None:
         """Translate the header of the block.
 
         This method translates the syntax of the header of the block and
@@ -411,6 +447,7 @@ class IfStatement(Block):
         )
 
     def _translate_footer(self):
+    def _translate_footer(self) -> None:
         """Translate the footer of the block.
 
         This method translates the syntax of the footer of the block and
