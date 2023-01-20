@@ -428,33 +428,33 @@ class ForLoop(Block):
         This method translates the syntax of the header of the block and
         converts it to a equivalent Python statement.
         """
-        case_1 = re.match(
-            r"^desde\s+(.+?)\s+hasta\s+(\w+)\s+paso\s+(\w+)\s+hacer$",
+        with_step = re.match(
+            r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
             self._header,
             self.FLAGS
         )
 
-        case_2 = re.match(
-            r"^desde\s+(.+?)\s+hasta\s+(\w+)\s+hacer$",
+        without_step = re.match(
+            r"^desde\s+(.+?)\s+hasta\s+(.+)\s+hacer$",
             self._header,
             self.FLAGS
         )
 
-        case = (case_1 if case_1 is not None else case_2).groups()
+        head = (with_step if with_step is not None else without_step).groups()
 
-        if "<-" in case[0]:
-            iterator = case[0].split('<-')[0].strip()
-            start = case[0].split('<-')[1].strip()
-            end = case[1]
+        if "<-" in head[0]:
+            iterator = Expression(head[0].split('<-')[0].strip())
+            start = Expression(head[0].split('<-')[1].strip())
+            end = Expression(head[1])
         else:
-            iterator = case[0]
-            start = case[1]
-            end = case[2]
+            iterator = Expression(head[0])
+            start = Expression(head[1])
+            end = Expression(head[2])
 
-        if len(case) == 3:
-            step = case[2]
+        if len(head) == 3:
+            step = Expression(head[2])
         else:
-            step = 1
+            step = Expression('1')
 
         self._header = f"for {iterator} in range({start}, {end} + 1, {step}):"
 
@@ -504,12 +504,15 @@ class WhileLoop(Block):
         This method translates the syntax of the header of the block and
         converts it to a equivalent Python statement.
         """
-        self._header = re.sub(
-            r"^mientras\s+(.*?)\s+hacer$",
-            r"while \1:",
-            self._header,
-            self.FLAGS
+        condition = Expression(
+            re.match(
+                r"^mientras\s+(.+?)\s+hacer$",
+                self._header,
+                self.FLAGS
+            ).groups()[0]
         )
+
+        self._header = f"while {condition}:"
 
     def _translate_footer(self) -> None:
         """Translate the footer of the block.
@@ -575,12 +578,15 @@ class IfStatement(Block):
         This method translates the syntax of the header of the block and
         converts it to a equivalent Python statement.
         """
-        self._header = re.sub(
-            r"^si\s+(.*?)\s+entonces$",
-            r"if \1:",
-            self.lines[0],
-            self.FLAGS
+        condition = Expression(
+            re.match(
+                r"^si\s+(.+?)\s+entonces$",
+                self._header,
+                self.FLAGS
+            ).groups()[0]
         )
+
+        self._header = f"if {condition}:"
 
     def _translate_footer(self) -> None:
         """Translate the footer of the block.
@@ -591,7 +597,7 @@ class IfStatement(Block):
         self._footer = re.sub(
             r"^fin_si$",
             '',
-            self.lines[-1],
+            self._footer,
             self.FLAGS
         )
 
