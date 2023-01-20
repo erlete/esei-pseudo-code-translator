@@ -388,6 +388,77 @@ class IfStatement(Block):
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
 
+    def _translate(self):
+        """Translate the block.
+
+        This method is a specific implementation of the `Block._translate`
+        method. Refer to the original documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self):
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._header = re.sub(
+            r"^si\s+(.*?)\s+entonces$",
+            r"if \1:",
+            self.lines[0],
+            self.FLAGS
+        )
+
+    def _translate_footer(self):
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._footer = re.sub(
+            r"^fin_si$",
+            '',
+            self.lines[-1],
+            self.FLAGS
+        )
+
+    def render(self, indentation_level: int = 0,
+               no_recursion: bool = False) -> list[str]:
+        """Render the block.
+
+        This method is a specific implementation of the `Block.render` method.
+        Refer to the original documentation for further information.
+
+        Args:
+            indentation_level (int): indentation level of the block.
+            no_recursion (bool): if True, the children blocks will not be
+                rendered.
+
+        Returns:
+            list[str]: list of lines of code.
+        """
+        spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
+        outer_ind = indentation_level * spacing
+        inner_ind = (indentation_level + 1) * spacing
+
+        lines: list[str] = [f"{outer_ind}{self._header}"]
+        for line in self.lines[1:-1]:
+            if isinstance(line, Block):
+                if no_recursion:
+                    lines.append(f"{inner_ind}{line!r}")
+                else:
+                    sub_render = line.render(indentation_level + 1)
+                    lines.extend(sub_render)
+            else:
+                if re.match(r"^si_no", line, self.FLAGS):
+                    lines.append(f"{outer_ind}else:")
+                else:
+                    lines.append(f"{inner_ind}{line}")
+
+        lines.append(f"{outer_ind}{self._footer}")
+        return lines
+
 
 class MatchStatement(Block):
     """Match statement structural class.
