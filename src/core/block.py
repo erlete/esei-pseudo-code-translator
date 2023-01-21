@@ -195,12 +195,13 @@ class Block(InterpreterConfig):
             This method should only be called on the root blocks in order to
             prevent redundant calls.
         """
+        reduction = 0
         for child in sorted(self.children):
-            offset = len(child.lines)
-            for i in range(len(self.lines) - offset):
-                if self.lines[i:i + offset] == child.lines:
-                    self.lines[i:i + offset] = [child]
-                    break
+            start_i = child.start - self.start - reduction
+            end_i = child.end - self.start + 1 - reduction
+
+            self.lines[start_i:end_i] = [child]
+            reduction += end_i - start_i - 1
 
         for child in sorted(self.children):
             child.fold()
