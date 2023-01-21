@@ -594,7 +594,7 @@ class IfStatement(Block):
     HEADER = r"^si\s+"
     FOOTER = r"^fin_si$"
     BREAKPOINTS = {
-        r"^si_no$": "else:",
+        r"^si_no.*$": "else:",
     }
 
     def _translate_delimiters(self) -> None:
@@ -653,7 +653,82 @@ class MatchStatement(Block):
 
     HEADER = r"^caso\s+"
     FOOTER = r"^fin_caso$"
+    BREAKPOINTS = {
+        r"^si_no$": '',
+    }
 
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
+
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self) -> None:
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        case = Expression(
+            re.match(
+                r"^caso\s+(.+?)\s+sea$",
+                self._header,
+                self.FLAGS
+            ).groups()[0]
+        )
+
+        self._header = f"match {case}:"
+
+    def _translate_footer(self) -> None:
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._footer = re.sub(
+            r"^fin_caso$",
+            '',
+            self._footer,
+            self.FLAGS
+        )
+
+    def _translate_body(self) -> None:
+        """Translate block body to Python code.
+
+        This method is a generic body translation method. It is called in the
+        constructor of the class.
+        """
+        for i, line in enumerate(self.lines):
+            #print(f"Line number {i}: \"{line}\"")
+            if not isinstance(line, Block):
+                #print("The line is not a block")
+                # TODO: removeme
+                matches = (
+                    re.match(exp, line, self.FLAGS)
+                    for exp in [self._header, self._footer] + list(
+                        self.BREAKPOINTS if self.BREAKPOINTS is not None
+                        else []
+                    )
+                )
+                if not all(matches) and "si_no" not in line:
+                    print(f"Line number {i} before: \"{self.lines[i]}\"")
+                    if ':' not in line and line != '':
+                        #print("There are no \":\" in the line")
+                        self.lines[i] = Expression(f"case _: {line}")
+                    else:
+                        #print("There are \":\" in the line")
+                        value, expression = [
+                            item.strip() for item in line.split(':')
+                        ]
+                        self.lines[i] = Expression(f"case {value}: {expression}")
+            #print(f"Line number {i} after: \"{self.lines[i]}\"\n")
+
+        #for i, line in enumerate(self.lines):
+            #print(f"Line {i:<3}: {line}")
 
 class Function(Block):
     """Function structural class.
