@@ -9,15 +9,15 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from src.core.parser import PseudoCodeParser
+from src.core.scanner import Scanner
 from src.gui.application import MainWindow
 
 if sys.argv[-1] == "debug":
     sample = (f := open("samples/sample_2.txt", "r")).read()
-    parser = PseudoCodeParser(sample)
-    parser.parse()
+    scanner = Scanner(sample)
+    scanner.scan()
 
-    print(parser.parsed_code)
+    print(scanner.render())
 
     f.close()
 else:
