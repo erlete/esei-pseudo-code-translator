@@ -1,0 +1,8 @@
+INICIO
+    DESDE i <- 0 HASTA 20 HACER
+        ESCRIBIR(i)
+    FIN_DESDE
+    DESDE i <- 0 HASTA 20 PASO 2 HACER
+        ESCRIBIR(i)
+    FIN_DESDE
+FIN

@@ -1,0 +1,19 @@
+INICIO
+    SI 1 = 2 ENTONCES
+        SI 5 = 4 ENTONCES
+            ESCRIBIR(1)
+        SI_NO ENTONCES
+            ESCRIBIR(2)
+        FIN_SI
+    FIN_SI
+
+    SI 5 = 4 ENTONCES
+        SI 1 = 2 ENTONCES
+            ESCRIBIR(1)
+        FIN_SI
+    SI_NO ENTONCES
+        SI 1 = 2 ENTONCES
+            ESCRIBIR(1)
+        FIN_SI
+    FIN_SI
+FIN
