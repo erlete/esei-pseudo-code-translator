@@ -1,3 +1,4 @@
 colorama
 PyQt6
 regex
+pytest
