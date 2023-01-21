@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
                              QMainWindow, QPushButton, QScrollArea,
                              QStackedLayout, QVBoxLayout, QWidget)
 
-from ..core.parser import PseudoCodeParser
+from ..core.scanner import Scanner
 from .labels import Footer, Subtitle, TextBoxLabel, Title
 from .text_boxes import CodeField
 
@@ -104,12 +104,11 @@ class TextInputWindow(QMainWindow):
         self.resize(int(screen.width() * .8), int(screen.height() * .8))
 
     def parse_input(self):
-        (parser := PseudoCodeParser(
-            self.code_input.text.toPlainText()
-        )).parse()
+        parser = Scanner(self.code_input.text.toPlainText(), 2)
+        parser.scan()
 
         # Strip the code and add a single newline at the end:
-        self.code_output.text.setText(parser.parsed_code.strip() + '\n')
+        self.code_output.text.setText(parser.render().strip() + '\n')
 
     def execute_code(self):
         # Standard output redirection:

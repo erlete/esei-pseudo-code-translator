@@ -7,7 +7,7 @@ class Text(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.font = QFont("Monaco", 11, QFont.Weight.Normal)
+        self.font = QFont("Monaco", 14, QFont.Weight.Normal)
 
         self.setFont(self.font)
         self.setAlignment(Qt.AlignmentFlag.AlignLeft)
