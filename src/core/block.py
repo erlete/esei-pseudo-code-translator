@@ -784,6 +784,38 @@ class Main(Function):
     FOOTER = r"^fin$"
 
 
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
+
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self) -> None:
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._header = f"def main():"
+
+    def _translate_footer(self) -> None:
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._footer = re.sub(
+            r"^fin$",
+            'main()',
+            self._footer,
+            self.FLAGS
+        )
+
+
 TYPES: Any = (
     ForLoop, WhileLoop, DoWhileLoop, IfStatement, MatchStatement,
     Function, Procedure, Main
