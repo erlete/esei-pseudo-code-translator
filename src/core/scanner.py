@@ -156,6 +156,9 @@ class Scanner:
         for root in sorted(self.roots):
             root.fold()
 
+        for block in sorted(self.blocks):
+            block.translate()
+
     def tree(self) -> str:
         """Return the unrendered, indented representation of the blocks.
 
