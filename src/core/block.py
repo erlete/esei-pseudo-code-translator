@@ -14,7 +14,6 @@ from typing import Any
 
 import regex as re
 
-
 class InterpreterConfig:
     """Base class for interpreter configuration.
 
@@ -155,6 +154,7 @@ class Block(InterpreterConfig):
         self.parent: Block | None = None
         self.children: list[Block] = list()
 
+    def translate(self) -> None:
         self._translate_delimiters()
         self._translate_body()
 
@@ -576,6 +576,96 @@ class DoWhileLoop(Block):
     HEADER = r"^hacer$"
     FOOTER = r"^mientras\s+"
 
+    def _translate_delimiters(self) -> None:
+        """Translate block delimiters to Python code.
+
+        This method is a specific implementation of the
+        `Block._translate_delimiters` method. Refer to the original
+        documentation for further information.
+        """
+        self._translate_header()
+        self._translate_footer()
+
+    def _translate_header(self) -> None:
+        """Translate the header of the block.
+
+        This method translates the syntax of the header of the block and
+        converts it to a equivalent Python statement.
+        """
+        self._header = ''
+
+    def _translate_footer(self) -> None:
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
+        condition = Expression(
+            re.match(
+                r"^mientras\s+(.+?)$",
+                self._footer,
+                self.FLAGS
+            ).groups()[0]
+        )
+
+        self._footer = ''
+        self._temp = condition
+
+    def _translate_body(self) -> None:
+        """Translate block body to Python code.
+
+        This method is a generic body translation method. It is called in the
+        constructor of the class.
+        """
+        for i, line in enumerate(self.lines):
+            if not isinstance(line, Block):
+                self.lines[i] = Expression(line)
+
+        self._prelines = self.lines[1:-1]
+
+
+    def render(self, indentation_level: int = 0,
+               no_recursion: bool = False) -> list[str]:
+        """Render the block.
+
+        This method is used to render the block recursively. This is done by
+        replacing the children blocks with their rendered versions. This method
+        is called recursively on the children blocks.
+
+        Args:
+            indentation_level (int): indentation level of the block.
+            no_recursion (bool): if True, the children blocks will not be
+                rendered.
+
+        Returns:
+            list[str]: list of lines of code.
+        """
+        spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
+        outer_ind = indentation_level * spacing
+
+        for line in self._prelines:
+            print(line)
+
+        lines: list[str] = []
+        for line in self._prelines:
+            if isinstance(line, Block):
+                if no_recursion:
+                    lines.append(f"{outer_ind}{line!r}")
+                else:
+                    sub_render = line.render(indentation_level)
+                    print(sub_render)
+                    lines.extend(sub_render)
+
+            else:
+                lines.append(f"{outer_ind}{line}")
+
+        lines.append(f"{outer_ind}while {self._temp}:")
+
+        for line in lines[1:-1]:
+            lines.append(f"    {line}")
+
+        return lines
+
 
 class IfStatement(Block):
     """If statement structural class.
@@ -703,10 +793,7 @@ class MatchStatement(Block):
         constructor of the class.
         """
         for i, line in enumerate(self.lines):
-            #print(f"Line number {i}: \"{line}\"")
             if not isinstance(line, Block):
-                #print("The line is not a block")
-                # TODO: removeme
                 matches = (
                     re.match(exp, line, self.FLAGS)
                     for exp in [self._header, self._footer] + list(
@@ -715,20 +802,14 @@ class MatchStatement(Block):
                     )
                 )
                 if not all(matches) and "si_no" not in line:
-                    print(f"Line number {i} before: \"{self.lines[i]}\"")
                     if ':' not in line and line != '':
-                        #print("There are no \":\" in the line")
                         self.lines[i] = Expression(f"case _: {line}")
+
                     else:
-                        #print("There are \":\" in the line")
                         value, expression = [
                             item.strip() for item in line.split(':')
                         ]
                         self.lines[i] = Expression(f"case {value}: {expression}")
-            #print(f"Line number {i} after: \"{self.lines[i]}\"\n")
-
-        #for i, line in enumerate(self.lines):
-            #print(f"Line {i:<3}: {line}")
 
 class Function(Block):
     """Function structural class.
