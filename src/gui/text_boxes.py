@@ -7,7 +7,8 @@ Authors:
     Paulo Sanchez (@erlete)
 """
 
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont, QKeyEvent
 from PyQt6.QtWidgets import QScrollArea, QTextEdit
 
 
@@ -18,7 +19,7 @@ class CodeField(QScrollArea):
         text (QTextEdit): the text field.
     """
 
-    def __init__(self, placeholder_text: str, read_only: bool) -> None:
+    def __init__(self, placeholder_text: str, read_only: bool = True) -> None:
         """Initialize the code field.
 
         Args:
@@ -39,6 +40,14 @@ class CodeField(QScrollArea):
         self._text.setTabStopDistance(
             8 * self._text.fontMetrics().horizontalAdvance(' ')
         )
+
+        self.setFont(QFont(
+            "Monaco",
+            11,
+            QFont.Weight.Normal
+        ))
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.setContentsMargins(11, 11, 11, 11)
 
         self.setWidget(self._text)
 
