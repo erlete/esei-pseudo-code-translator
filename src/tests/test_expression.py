@@ -67,7 +67,8 @@ class TestExpression:
                 )
 
     @classmethod
-    def check_operator(cls, operator, replacement, term_a, term_b, spacing_a, spacing_b):
+    def check_operator(cls, operator, replacement, term_a,
+                       term_b, spacing_a, spacing_b):
         text = f"{term_a}{spacing_a}{operator}{spacing_b}{term_b}"
         expected = f"{term_a} {replacement} {term_b}"
         expression = Expression(text)

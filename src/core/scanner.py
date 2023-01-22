@@ -1,6 +1,6 @@
 """Container module for the `Scanner` class.
 
-Author:
+Authors:
     Paulo Sanchez (@erlete)
 """
 

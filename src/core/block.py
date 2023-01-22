@@ -1,10 +1,11 @@
 """Structural module for code organization and rendering.
 
-This module contains the `Block` class, which is used to represent a block of
-code. Furthermore, it also contains the `InterpreterConfig` class, which is
-used to configure the emulated Python interpreter.
+This module contains three generic classes, `InterpreterConfig`, `Expression`
+and `Block`, that are used to represent the code in a more structured way.
+Furthermore, there are multiple other derived classes that are used to
+represent specific structures of the code (`IfStatement`, `ForLoop`...).
 
-Author:
+Authors:
     Paulo Sanchez (@erlete)
 """
 
@@ -32,6 +33,18 @@ class InterpreterConfig:
 
 
 class Expression(InterpreterConfig):
+    """Class for single instruction translation.
+
+    This class is used to translate a single line of code into a valid Python
+    expression. It also provides with some methods to compare and hash the
+    expression.
+
+    Attributes:
+        body (str): line of code.
+        start (int): index of the line in the original code.
+        OPERATORS (dict[str, str]): dictionary of operators to translate.
+        IDENTIFIERS (dict[str, str]): dictionary of identifiers to translate.
+    """
 
     OPERATORS = {
         r"\/\/": '#',
@@ -58,6 +71,12 @@ class Expression(InterpreterConfig):
     }
 
     def __init__(self, line: str, start: int = 0) -> None:
+        """Initialize the expression.
+
+        Args:
+            line (str): line of code.
+            start (int): index of the line in the original code.
+        """
         self.type = None
         self.body = line.strip()
         self.start = start
@@ -65,16 +84,36 @@ class Expression(InterpreterConfig):
         self._translate()
 
     def _translate(self):
+        """Translate the expression into a valid Python expression.
+
+        This method is automatically called when the object is initialized.
+        """
         t_operators = self._translate_operators(self.body)
         self.body = self._translate_identifiers(t_operators)
 
     def _translate_operators(self, code: str) -> str:
+        """Translate operators in the expression.
+
+        Args:
+            code (str): line of code.
+
+        Returns:
+            str: line of code with translated operators.
+        """
         for expression, replacement in self.OPERATORS.items():
             code = re.sub(expression, replacement, code)
 
         return code
 
     def _translate_identifiers(self, code: str) -> str:
+        """Translate identifiers in the expression.
+
+        Args:
+            code (str): line of code.
+
+        Returns:
+            str: line of code with translated identifiers.
+        """
         for expression, replacement in self.IDENTIFIERS.items():
             code = re.sub(expression, replacement, code)
 
@@ -82,33 +121,162 @@ class Expression(InterpreterConfig):
 
     @staticmethod
     def no_spaces(text: str) -> str:
+        """Remove all spaces from a string.
+
+        Args:
+            text (str): string to remove spaces from.
+
+        Returns:
+            str: string without spaces.
+        """
         return re.sub(r"\s+", "", text)
 
     def __str__(self) -> str:
+        """Return the expression as a string.
+
+        Returns:
+            str: expression as a string.
+        """
         return self.body
 
     def __repr__(self) -> str:
+        """Return the expression as a string.
+
+        Returns:
+            str: expression as a string.
+        """
         return f"Expression({self.start!r})"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expressions are equal, False otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return str(self) == str(other)
 
     def __ne__(self, other) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expressions are different, False otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return str(self) != str(other)
 
     def __hash__(self) -> int:
+        """Return the hash of the expression.
+
+        Returns:
+            int: hash of the expression.
+        """
         return hash(self.body)
 
     def __gt__(self, other) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expression is greater than the other, False
+                otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return self.start > other.start
 
     def __lt__(self, other) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expression is lower than the other, False
+                otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return self.start < other.start
 
     def __ge__(self, other) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expression is greater than or equal to the other,
+                False otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return self.start >= other.start
 
-    def __le__(self, other) -> bool:
+    def __le__(self, other: Any) -> bool:
+        """Compare two expressions.
+
+        Args:
+            other (Any): object to compare with.
+
+        Raises:
+            TypeError: if other is not a Expression instance.
+
+        Returns:
+            bool: True if the expression is lower than or equal to the other,
+                False otherwise.
+        """
+        if not isinstance(other, Expression):
+            raise TypeError(
+                "cannot compare class Expression with class "
+                + f"{other.__class__.__name__}"
+            )
+
         return self.start <= other.start
 
 
@@ -156,6 +324,7 @@ class Block(InterpreterConfig):
         self.children: list[Block] = list()
 
     def translate(self) -> None:
+        """Translate block to Python code."""
         self._translate_header()
         self._translate_footer()
         self._translate_body()
