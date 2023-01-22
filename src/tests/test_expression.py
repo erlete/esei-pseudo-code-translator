@@ -1,20 +1,36 @@
 from ..core.block import Expression
 from itertools import combinations_with_replacement as comb
 
+
 class TestExpression:
 
+    SYMBOLS = {
+        "add": "+",
+        "as": "<-",
+        "div": "/",
+        "eq": "=",
+        "ge": ">=",
+        "gt": ">",
+        "le": "<=",
+        "lt": "<",
+        "mod": "mod",
+        "mul": "*",
+        "ne": "<>",
+        "sub": "-"
+    }
+
     OPERATORS = {
-        "=": "==",
-        "<-": "=",
-        "<>": "!=",
-        "<": "<",
-        ">": ">",
-        "<=": "<=",
-        ">=": ">=",
-        "+": "+",
         "-": "-",
         "*": "*",
         "/": "/",
+        "+": "+",
+        "<-": "=",
+        "<": "<",
+        "<=": "<=",
+        "<>": "!=",
+        "=": "==",
+        ">": ">",
+        ">=": ">=",
         "mod": "%"
     }
 
@@ -36,17 +52,95 @@ class TestExpression:
         SPACING + [(b, a) for a, b in SPACING]
     ))
 
-    PAD = 35
+    @classmethod
+    def expression_test(cls):
+        operator = cls.__name__.replace("Test", "").lower()
+        for term_a, term_b in cls.TERMS:
+            for spacing_a, spacing_b in cls.SPACING:
+                cls.check_operator(
+                    cls.SYMBOLS[operator],
+                    cls.OPERATORS[cls.SYMBOLS[operator]],
+                    term_a,
+                    term_b,
+                    spacing_a,
+                    spacing_b
+                )
 
-    def test(self):
-        for operator, replacement in self.OPERATORS.items():
-            for term_a, term_b in self.TERMS:
-                for spacing_a, spacing_b in self.SPACING:
-                    self._check_operator(
-                        operator, replacement, term_a, term_b, spacing_a, spacing_b)
-
-    def _check_operator(self, operator, replacement, term_a, term_b, spacing_a, spacing_b):
+    @classmethod
+    def check_operator(cls, operator, replacement, term_a, term_b, spacing_a, spacing_b):
         text = f"{term_a}{spacing_a}{operator}{spacing_b}{term_b}"
         expected = f"{term_a} {replacement} {term_b}"
         expression = Expression(text)
         assert expression.body == expected
+
+
+class TestAdd(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestAs(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestDiv(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestEq(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestNe(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestLt(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestLe(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestGt(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestGe(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestMul(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestSub(TestExpression):
+
+    def test(self):
+        self.expression_test()
+
+
+class TestMod(TestExpression):
+
+    def test(self):
+        self.expression_test()
