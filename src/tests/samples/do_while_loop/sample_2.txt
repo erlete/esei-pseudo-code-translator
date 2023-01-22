@@ -5,6 +5,10 @@ INICIO
         x <- x + 1
         HACER
             y <- y + 1
-        MIENTRAS y != 10
+            ESCRIBIR(x, y)
+        MIENTRAS y < 10
+        MIENTRAS x < 10 HACER
+            ESCRIBIR(x)
+        FIN_MIENTRAS
     MIENTRAS x < 10
 FIN
