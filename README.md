@@ -10,18 +10,7 @@ The executable version of this package does not require any dependencies, sice t
 
 The binary file can be found in the latest release of this repository. It is recommended to download the latest version of the package, since it will contain the latest bug fixes and improvements.
 
-_**Note:** the executable version is only available for Windows. It will not be available for macOS/UNIX. The command line version can be used with those OSs instead._
-
-### Command line (Python package)
-
-The command line version of the package is distributed via PyPI. All required dependencies are listed in the `requirements.txt` file, but they should be automatically installed along with the package.
-
-_It is assumed that Python 3 is installed in the system and can be accessed via the `python` command._
-
-```bash
-# Install the package:
-python -m pip install pseudo-code-translator
-```
+_**Note:** the executable version is only available for Windows. It will not be available for macOS/UNIX._
 
 ## Usage
 
@@ -30,21 +19,6 @@ python -m pip install pseudo-code-translator
 The `.exe` file can be executed by double clicking it. It will open a GUI window that will allow the user to translate and execute pseudo code. All information on how to use the software can be found in the "Usage instructions" section of the window.
 
 _**Note:** the executable version might be flagged as a virus by some antivirus software (and even Windows Defender). This is due to the fact that the executable file contains the Python interpreter and all required libraries. Furthermore, it is not signed, so it might be considered a threat. This is a false positive, since the executable file is safe to use (the source code is available for inspection)._
-
-### Command line
-
-_It is assumed that Python 3 is installed in the system and can be accessed via the `python` command._
-
-```bash
-# Translate a file and output the result to the console:
-python -m pseudo_code_translator <input_file>
-
-# Translate a file, output the result to the console and execute the code:
-python -m pseudo_code_translator <input_file> --execute
-
-# Translate a file and output the result to a file:
-python -m pseudo_code_translator <input_file> <output_file>
-```
 
 ## Translation support
 
