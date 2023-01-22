@@ -490,7 +490,11 @@ class ForLoop(Block):
         self._header = f"for {iterator} in range({start}, {end} + 1, {step}):"
 
     def _translate_footer(self) -> None:
-        """Translate block footer to Python code."""
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
         self._footer = re.sub(
             r"^fin_desde$",
             '',
@@ -529,7 +533,11 @@ class WhileLoop(Block):
         self._header = f"while {condition}:"
 
     def _translate_footer(self) -> None:
-        """Translate block footer to Python code."""
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
         self._footer = re.sub(
             r"^fin_mientras$",
             '',
@@ -577,7 +585,11 @@ class DoWhileLoop(Block):
         self._temp = condition
 
     def _translate_body(self) -> None:
-        """Translate block footer to Python code."""
+        """Translate block body to Python code.
+
+        This method is a generic body translation method. It is called in the
+        constructor of the class.
+        """
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 self.lines[i] = Expression(line)
@@ -621,8 +633,17 @@ class DoWhileLoop(Block):
 
         lines.append(f"{outer_ind}while {self._temp}:")
 
-        for line in lines[1:-1]:
-            lines.append(f"    {line}")
+        for line in self._sub_body:
+            if isinstance(line, Block):
+                if no_recursion:
+                    lines.append(f"{outer_ind}{line!r}")
+                else:
+                    sub_render = line.render(indentation_level + 1)
+                    print(sub_render)
+                    lines.extend(sub_render)
+
+            else:
+                lines.append(f"{inner_ind}{line}")
 
         return lines
 
@@ -660,7 +681,11 @@ class IfStatement(Block):
         self._header = f"if {condition}:"
 
     def _translate_footer(self) -> None:
-        """Translate block footer to Python code."""
+        """Translate the footer of the block.
+
+        This method translates the syntax of the footer of the block and
+        converts it to a equivalent Python statement.
+        """
         self._footer = re.sub(
             r"^fin_si$",
             '',
