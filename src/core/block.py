@@ -623,7 +623,6 @@ class DoWhileLoop(Block):
                     lines.append(f"{outer_ind}{line!r}")
                 else:
                     sub_render = line.render(indentation_level)
-                    print(sub_render)
                     lines.extend(sub_render)
 
             else:
@@ -637,7 +636,6 @@ class DoWhileLoop(Block):
                     lines.append(f"{outer_ind}{line!r}")
                 else:
                     sub_render = line.render(indentation_level + 1)
-                    print(sub_render)
                     lines.extend(sub_render)
 
             else:

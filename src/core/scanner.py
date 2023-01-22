@@ -48,19 +48,40 @@ class Scanner:
         """
         blocks = []
         for block_type in TYPES:
-
             i = 0
+            di = i + 1  # Displayed index.
+
+            self.logger.log(
+                f"Searching for {block_type.__name__} blocks...",
+                log_level=1
+            )
+
             while i < len(self.lines):
                 line = self.lines[i]
-                self.logger.log(f"{i:0>3} - Analyzing line: \"{line}\"", 0)
+
+                self.logger.log(
+                    f"{di:0>3} - Analyzing \"{line}\"",
+                    log_level=0
+                )
 
                 if re.match(block_type.HEADER, line, block_type.FLAGS):
                     self.logger.log(
-                        f"{i:0>3} - Found open statement. Recursing...", 0
+                        f"{di:0>3} - Found header. Recursing...",
+                        log_level=1
                     )
-                    blocks.extend(self._find_blocks(
-                        self.lines, block_type, i + 1))
-                    self.logger.log(f"{i:0>3} - Returning to root...", 0)
+
+                    blocks.extend(
+                        self._find_blocks(
+                            self.lines,
+                            block_type,
+                            i + 1
+                        )
+                    )
+
+                    self.logger.log(
+                        f"{di:0>3} - Returning to root...",
+                        log_level=1
+                    )
 
                 i += 1
 
@@ -84,34 +105,45 @@ class Scanner:
 
         self.logger.log(
             f"Searching for \"{header}\" or \"{footer}\" from line {start}",
-            0
+            log_level=0
         )
 
         i = 0
         while i < len(lines[start:]):
+            di = i + 1  # Displayed index.
             line = lines[start:][i]
 
             self.logger.log(
-                f"({start + i:0>3}) {i:0>3} - Analyzing line: \"{line}\"",
-                0
+                f"({start + di:0>3}) {di:0>3} - Analyzing \"{line}\"",
+                log_level=0
             )
 
             if re.match(header, line, re.IGNORECASE | re.MULTILINE):
                 self.logger.log(
-                    f"({start + i:0>3}) {i:0>3} - Found open statement. "
+                    f"({start + di:0>3}) {di:0>3} - Found header. "
                     + "Recursing...",
-                    0
+                    log_level=0
                 )
 
-                blocks.extend(self._find_blocks(lines, block_type,
-                                                i + start + 1))
-                i = max(blocks, key=lambda x: x.end).end - start
+                blocks.extend(
+                    self._find_blocks(
+                        lines,
+                        block_type,
+                        i + start + 1
+                    )
+                )
+
+                if blocks:
+                    i = max(blocks, key=lambda x: x.end).end - start
+                    self.logger.log(f"Detected blocks {blocks}", log_level=1)
+                else:
+                    self.logger.log("No blocks detected", log_level=2)
 
             if re.match(footer, line, re.IGNORECASE | re.MULTILINE):
                 self.logger.log(
-                    f"({start + i:0>3}) {i:0>3} - Found close statement. "
+                    f"({start + di:0>3}) {di:0>3} - Found footer. "
                     + "Returning to previous call...",
-                    0
+                    log_level=0
                 )
 
                 blocks.append(block_type(
