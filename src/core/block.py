@@ -14,6 +14,7 @@ from typing import Any
 
 import regex as re
 
+
 class InterpreterConfig:
     """Base class for interpreter configuration.
 
@@ -155,22 +156,36 @@ class Block(InterpreterConfig):
         self.children: list[Block] = list()
 
     def translate(self) -> None:
-        self._translate_delimiters()
+        self._translate_header()
+        self._translate_footer()
         self._translate_body()
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
+    def _translate_header(self) -> None:
+        """Translate block header to Python code.
 
-        This method is a placeholder for custom implementations of delimiter
-        translation methods. It is called in the constructor of the class.
+        This method acts as placeholder for the header translation. It is
+        called by the `translate` method and has got a specific
+        implementation in each child descendant of the `Block` class.
+        """
+        pass
+
+    def _translate_footer(self) -> None:
+        """Translate block footer to Python code.
+
+        This method acts as placeholder for the footer translation. It is
+        called by the `translate` method after `_translate_header` and
+        has got a specific implementation in each child descendant of the
+        `Block` class.
         """
         pass
 
     def _translate_body(self) -> None:
         """Translate block body to Python code.
 
-        This method is a generic body translation method. It is called in the
-        constructor of the class.
+        This method translates the body of the block, ignoring breakpoints. It
+        is called by the `translate` method after `_translate_header` and
+        `_translate_body` and might have a specific implementation in each
+        child descendant of the `Block` class.
         """
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
@@ -442,22 +457,8 @@ class ForLoop(Block):
     HEADER = r"^desde\s+"
     FOOTER = r"^fin_desde$"
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block header to Python code."""
         with_step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
             self._header,
@@ -489,11 +490,7 @@ class ForLoop(Block):
         self._header = f"for {iterator} in range({start}, {end} + 1, {step}):"
 
     def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block footer to Python code."""
         self._footer = re.sub(
             r"^fin_desde$",
             '',
@@ -519,22 +516,8 @@ class WhileLoop(Block):
     HEADER = r"^mientras\s+"
     FOOTER = r"^fin_mientras$"
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block header to Python code."""
         condition = Expression(
             re.match(
                 r"^mientras\s+(.+?)\s+hacer$",
@@ -546,11 +529,7 @@ class WhileLoop(Block):
         self._header = f"while {condition}:"
 
     def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block footer to Python code."""
         self._footer = re.sub(
             r"^fin_mientras$",
             '',
@@ -576,22 +555,8 @@ class DoWhileLoop(Block):
     HEADER = r"^hacer$"
     FOOTER = r"^mientras\s+"
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block header to Python code."""
         self._header = ''
 
     def _translate_footer(self) -> None:
@@ -612,17 +577,12 @@ class DoWhileLoop(Block):
         self._temp = condition
 
     def _translate_body(self) -> None:
-        """Translate block body to Python code.
-
-        This method is a generic body translation method. It is called in the
-        constructor of the class.
-        """
+        """Translate block footer to Python code."""
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 self.lines[i] = Expression(line)
 
         self._prelines = self.lines[1:-1]
-
 
     def render(self, indentation_level: int = 0,
                no_recursion: bool = False) -> list[str]:
@@ -687,22 +647,8 @@ class IfStatement(Block):
         r"^si_no.*$": "else:",
     }
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block header to Python code."""
         condition = Expression(
             re.match(
                 r"^si\s+(.+?)\s+entonces$",
@@ -714,11 +660,7 @@ class IfStatement(Block):
         self._header = f"if {condition}:"
 
     def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block footer to Python code."""
         self._footer = re.sub(
             r"^fin_si$",
             '',
@@ -747,22 +689,8 @@ class MatchStatement(Block):
         r"^si_no$": '',
     }
 
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block header to Python code."""
         case = Expression(
             re.match(
                 r"^caso\s+(.+?)\s+sea$",
@@ -774,11 +702,7 @@ class MatchStatement(Block):
         self._header = f"match {case}:"
 
     def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block footer to Python code."""
         self._footer = re.sub(
             r"^fin_caso$",
             '',
@@ -809,7 +733,9 @@ class MatchStatement(Block):
                         value, expression = [
                             item.strip() for item in line.split(':')
                         ]
-                        self.lines[i] = Expression(f"case {value}: {expression}")
+                        self.lines[i] = Expression(
+                            f"case {value}: {expression}")
+
 
 class Function(Block):
     """Function structural class.
@@ -864,31 +790,12 @@ class Main(Function):
     HEADER = r"^inicio$"
     FOOTER = r"^fin$"
 
-
-    def _translate_delimiters(self) -> None:
-        """Translate block delimiters to Python code.
-
-        This method is a specific implementation of the
-        `Block._translate_delimiters` method. Refer to the original
-        documentation for further information.
-        """
-        self._translate_header()
-        self._translate_footer()
-
     def _translate_header(self) -> None:
-        """Translate the header of the block.
-
-        This method translates the syntax of the header of the block and
-        converts it to a equivalent Python statement.
-        """
-        self._header = f"def main():"
+        """Translate block header to Python code."""
+        self._header = "def main():"
 
     def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
+        """Translate block footer to Python code."""
         self._footer = re.sub(
             r"^fin$",
             'main()',
