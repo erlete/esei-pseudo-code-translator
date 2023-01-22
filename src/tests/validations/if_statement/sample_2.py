@@ -5,4 +5,5 @@ def main():
         else:
             print(2)
 
+
 main()
