@@ -1,8 +1,8 @@
 """Container module for labels in the application.
 
 This module contains the labels used in the application. The standard label is
-represented by the `Text` class. Some extended labels are also provided, such as
-`Header1` and `Header2`.
+represented by the `Text` class. Some extended labels are also provided, such
+as `Header1` and `Header2`.
 
 Authors:
     Paulo Sanchez (@erlete)
