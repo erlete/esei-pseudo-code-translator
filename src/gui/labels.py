@@ -1,7 +1,8 @@
 """Container module for labels in the application.
 
-This module contains the labels used in the application. These are the labels
-that are used to display text.
+This module contains the labels used in the application. The standard label is
+represented by the `Text` class. Some extended labels are also provided, such as
+`Header1` and `Header2`.
 
 Authors:
     Paulo Sanchez (@erlete)
@@ -15,8 +16,75 @@ from PyQt6.QtWidgets import QLabel
 class Text(QLabel):
     """Standard text label.
 
+    This class represents the standard text format of the application. Extended
+    text formats can be added by inheriting from this class.
+
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
+        WEIGHTS (dict): the weights of the font.
+        ALIGNMENTS (dict): the alignments of the text.
+    """
+
+    WEIGHTS = {
+        "normal": QFont.Weight.Normal,
+        "bold": QFont.Weight.Bold,
+        "light": QFont.Weight.Light,
+        "thin": QFont.Weight.Thin,
+        "black": QFont.Weight.Black,
+        "demibold": QFont.Weight.DemiBold,
+        "medium": QFont.Weight.Medium,
+        "extrabold": QFont.Weight.ExtraBold,
+        "extralight": QFont.Weight.ExtraLight
+    }
+
+    ALIGNMENTS = {
+        "left": Qt.AlignmentFlag.AlignLeft,
+        "right": Qt.AlignmentFlag.AlignRight,
+        "center": Qt.AlignmentFlag.AlignCenter,
+        "justify": Qt.AlignmentFlag.AlignJustify
+    }
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Initialize the text label.
+
+        Args:
+            *args: the arguments.
+            **kwargs: the keyword arguments.
+        """
+        super().__init__(*args, **kwargs)
+
+        self.font_name = "Menlo"
+        self.font_size = 13
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["left"]
+        self.contents_margins = (11, 11, 11, 11)
+
+        self.setup()
+
+    def setup(self) -> None:
+        """Set up the text label."""
+        self.setFont(QFont(
+            self.font_name,
+            self.font_size,
+            self.font_weight
+        ))
+        self.setAlignment(self.text_alignment)
+        self.setContentsMargins(*self.contents_margins)
+
+
+class TextBoxLabel(Text):
+    """Text box element head label.
+
+    Attributes:
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -28,18 +96,24 @@ class Text(QLabel):
         """
         super().__init__(*args, **kwargs)
 
-        self._font = QFont("Monaco", 14, QFont.Weight.Normal)
+        self.font_name = "Menlo"
+        self.font_size = 12
+        self.font_weight = self.WEIGHTS["bold"]
+        self.text_alignment = self.ALIGNMENTS["center"]
+        self.contents_margins = (5, 10, 0, 5)
 
-        self.setFont(self._font)
-        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.setContentsMargins(11, 11, 11, 11)
+        self.setup()
 
 
 class Header1(Text):
     """Header 1 text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -51,16 +125,24 @@ class Header1(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(20)
-        self.setFont(self._font)
-        self.setContentsMargins(20, 20, 20, 20)
+        self.font_name = "Menlo"
+        self.font_size = 20
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["left"]
+        self.contents_margins = (20, 20, 20, 20)
+
+        self.setup()
 
 
 class Header2(Text):
     """Header 2 text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -72,16 +154,24 @@ class Header2(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(18)
-        self.setFont(self._font)
-        self.setContentsMargins(18, 18, 18, 18)
+        self.font_name = "Menlo"
+        self.font_size = 18
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["left"]
+        self.contents_margins = (18, 18, 18, 18)
+
+        self.setup()
 
 
 class Header3(Text):
     """Header 3 text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -93,16 +183,24 @@ class Header3(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(16)
-        self.setFont(self._font)
-        self.setContentsMargins(16, 16, 16, 16)
+        self.font_name = "Menlo"
+        self.font_size = 16
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["left"]
+        self.contents_margins = (16, 16, 16, 16)
+
+        self.setup()
 
 
 class Title(Text):
     """Title text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -114,17 +212,24 @@ class Title(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(30)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFont(self._font)
-        self.setContentsMargins(30, 30, 30, 30)
+        self.font_name = "Menlo"
+        self.font_size = 30
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["center"]
+        self.contents_margins = (30, 30, 30, 30)
+
+        self.setup()
 
 
 class Subtitle(Text):
     """Subtitle text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -136,17 +241,24 @@ class Subtitle(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(14)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFont(self._font)
-        self.setContentsMargins(14, 14, 14, 14)
+        self.font_name = "Menlo"
+        self.font_size = 14
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["center"]
+        self.contents_margins = (14, 14, 14, 14)
+
+        self.setup()
 
 
 class Footer(Text):
     """Footer text label.
 
     Attributes:
-        _font (QFont): the font of the text.
+        font_name (str): the name of the font.
+        font_size (int): the size of the font.
+        font_weight (QFont.Weight): the weight of the font.
+        text_alignment (Qt.AlignmentFlag): the alignment of the text.
+        contents_margins (tuple): the margins of the text.
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -158,27 +270,10 @@ class Footer(Text):
         """
         super().__init__(*args, **kwargs)
 
-        self._font.setPointSize(8)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setContentsMargins(8, 8, 8, 8)
+        self.font_name = "Menlo"
+        self.font_size = 8
+        self.font_weight = self.WEIGHTS["normal"]
+        self.text_alignment = self.ALIGNMENTS["center"]
+        self.contents_margins = (8, 8, 8, 8)
 
-
-class TextBoxLabel(QLabel):
-    """Text box element head label.
-
-    Attributes:
-        _font (QFont): the font of the text.
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        """Initialize the text label.
-
-        Args:
-            *args: the arguments.
-            **kwargs: the keyword arguments.
-        """
-        super().__init__(*args, **kwargs)
-
-        self._font = QFont("Arial", 14, QFont.Weight.Normal)
-        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.setContentsMargins(5, 10, 0, 5)
+        self.setup()
