@@ -454,7 +454,7 @@ class ForLoop(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^desde\s+"
+    HEADER = r"^desde.*hacer$"
     FOOTER = r"^fin_desde$"
 
     def _translate_header(self) -> None:
@@ -517,7 +517,7 @@ class WhileLoop(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^mientras\s+"
+    HEADER = r"^mientras.*hacer$"
     FOOTER = r"^fin_mientras$"
 
     def _translate_header(self) -> None:
@@ -561,7 +561,7 @@ class DoWhileLoop(Block):
     """
 
     HEADER = r"^hacer$"
-    FOOTER = r"^mientras\s+"
+    FOOTER = r"^mientras.*[^hacer]$"
 
     def _translate_header(self) -> None:
         """Translate block header to Python code."""
@@ -594,7 +594,7 @@ class DoWhileLoop(Block):
             if not isinstance(line, Block):
                 self.lines[i] = Expression(line)
 
-        self._prelines = self.lines[1:-1]
+        self._sub_body = self.lines[1:-1]
 
     def render(self, indentation_level: int = 0,
                no_recursion: bool = False) -> list[str]:
@@ -614,12 +614,10 @@ class DoWhileLoop(Block):
         """
         spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
         outer_ind = indentation_level * spacing
-
-        for line in self._prelines:
-            print(line)
+        inner_ind = (indentation_level + 1) * spacing
 
         lines: list[str] = []
-        for line in self._prelines:
+        for line in self._sub_body:
             if isinstance(line, Block):
                 if no_recursion:
                     lines.append(f"{outer_ind}{line!r}")
@@ -662,7 +660,7 @@ class IfStatement(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^si\s+"
+    HEADER = r"^si[^_].*entonces$"
     FOOTER = r"^fin_si$"
     BREAKPOINTS = {
         r"^si_no.*$": "else:",
@@ -708,7 +706,7 @@ class MatchStatement(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^caso\s+"
+    HEADER = r"^caso.*sea$"
     FOOTER = r"^fin_caso$"
     BREAKPOINTS = {
         r"^si_no$": '',
