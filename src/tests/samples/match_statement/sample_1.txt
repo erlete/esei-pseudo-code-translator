@@ -1,0 +1,11 @@
+INICIO
+    x <- 2
+    CASO x SEA
+        1: ESCRIBIR("x is 1")
+        2: ESCRIBIR("x is 2")
+        3: ESCRIBIR("x is 3")
+        4: ESCRIBIR("x is 4")
+    SI_NO
+        ESCRIBIR("x is not 1, 2, 3, 4")
+    FIN_CASO
+FIN

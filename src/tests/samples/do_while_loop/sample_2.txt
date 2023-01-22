@@ -1,0 +1,10 @@
+INICIO
+    x <- 0
+    y <- 0
+    HACER
+        x <- x + 1
+        HACER
+            y <- y + 1
+        MIENTRAS y != 10
+    MIENTRAS x < 10
+FIN

@@ -1,0 +1,6 @@
+INICIO
+    x <- 0
+    HACER
+        x <- x + 1
+    MIENTRAS x < 10
+FIN

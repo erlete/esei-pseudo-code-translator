@@ -1,0 +1,7 @@
+INICIO
+    x <- 0
+    MIENTRAS x < 10 HACER
+        ESCRIBIR(x)
+        x <- x + 1
+    FIN_MIENTRAS
+FIN

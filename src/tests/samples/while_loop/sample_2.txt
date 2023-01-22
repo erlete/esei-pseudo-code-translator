@@ -1,0 +1,12 @@
+INICIO
+    x <- 0
+    y <- 0
+    MIENTRAS x < 10 HACER
+        ESCRIBIR(x)
+        MIENTRAS y < 10 HACER
+            ESCRIBIR(x)
+            y <- y + 1
+        FIN_MIENTRAS
+        x <- x + 1
+    FIN_MIENTRAS
+FIN
