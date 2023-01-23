@@ -8,33 +8,31 @@ Authors:
     Paulo Sanchez (@erlete)
 """
 
-
-import re
 import sys
-import traceback
 from io import StringIO
-from typing import Any
 
-from PyQt6.QtGui import QCloseEvent, QPixmap, QScreen
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QCloseEvent, QDesktopServices, QPixmap, QScreen
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
-                             QMainWindow, QPushButton, QScrollArea,
-                             QStackedLayout, QVBoxLayout, QWidget)
+                             QMainWindow, QPushButton, QStackedLayout,
+                             QVBoxLayout, QWidget)
 
 from ..core.scanner import Scanner
 from .labels import Footer, Subtitle, TextBoxLabel, Title
 from .text_boxes import CodeField
 
 
-class TextInputWindow(QMainWindow):
+class InputWindow(QMainWindow):
     """Code input, output and execution window.
 
     This window contains all the widgets used to receive code input, translate
     it and execute it. It also contains the widgets used to display the output
-    of the code execution.
+    after code execution.
 
     Attributes:
+        LABELS (dict[str, str]): the labels used in the window.
+        PLACEHOLDERS (dict[str, str]): the placeholders used in the window.
         layout_parent (QStackedLayout): the parent layout.
-        HEADERS (dict): the window headers.
         central_widget (QWidget): the central widget.
         code_input_label (TextBoxLabel): the code input label.
         code_output_label (TextBoxLabel): the code output label.
@@ -48,20 +46,21 @@ class TextInputWindow(QMainWindow):
         exec_button (QPushButton): the execute button.
     """
 
-    HEADERS: dict[str, str] = {
+    LABELS: dict[str, str] = {
         "title": "Pseudo Code Parser · Text Mode",
-
-        "clear_button": "Clear input",
+        "clear_button": "Clear fields",
         "exec_button": "Execute code",
+        "code_input": "Code input",
+        "code_output": "Translation",
+        "exec_output": "Execution output",
+        "exec_status": "Execution status"
+    }
 
-        "code_input_label": "Code input:",
-        "code_input_placeholder": "Enter your code here...",
-        "code_output_label": "Code parsing output:",
-        "code_output_placeholder": "Parsed code will be displayed here...",
-        "exec_output_label": "Code execution output:",
-        "exec_output_placeholder": "Code execution output will be displayed here...",
-        "exec_status_label": "Code execution status:",
-        "exec_status_placeholder": "Code execution status will be displayed here..."
+    PLACEHOLDERS: dict[str, str] = {
+        "code_input": "Enter pseudo code here...",
+        "code_output": "Translated code will be displayed here...",
+        "exec_output": "Execution output will be displayed here...",
+        "exec_status": "Execution status will be displayed here..."
     }
 
     def __init__(self, layout_parent) -> None:
@@ -74,68 +73,86 @@ class TextInputWindow(QMainWindow):
         self.layout_parent = layout_parent
 
         # Window title and central widget:
-        self.setWindowTitle(self.HEADERS["title"])
+        self.setWindowTitle(self.LABELS["title"])
         self.central_widget = QWidget()
 
-        # Input/output fields' labels:
+        # Set up fields, buttons, event handlers and layout:
+        self.setup_fields()
+        self.setup_buttons()
+        self.setup_event_handlers()
+        self.setup_layout()
+
+        # Display settings:
+        screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(int(screen.width() * .8), int(screen.height() * .8))
+
+    def setup_fields(self) -> None:
+        """Set up text fields with their corresponding labels."""
         self.code_input_label = TextBoxLabel(
-            self.HEADERS["code_input_label"]
+            self.LABELS["code_input"]
         )
-        self.code_output_label = TextBoxLabel(
-            self.HEADERS["code_output_label"]
-        )
-        self.exec_output_label = TextBoxLabel(
-            self.HEADERS["exec_output_label"]
-        )
-        self.exec_status_label = TextBoxLabel(
-            self.HEADERS["exec_status_label"]
+        self.code_input = CodeField(
+            self.PLACEHOLDERS["code_input"],
+            read_only=False
         )
 
-        # Input/output fields' text boxes:
-        self.code_input = CodeField(
-            self.HEADERS["code_input_placeholder"],
-            False
+        self.code_output_label = TextBoxLabel(
+            self.LABELS["code_output"]
         )
         self.code_output = CodeField(
-            self.HEADERS["code_output_placeholder"],
-            False
-        )
-        self.exec_output = CodeField(
-            self.HEADERS["exec_output_placeholder"],
-            True
-        )
-        self.exec_status = CodeField(
-            self.HEADERS["exec_status_placeholder"],
-            True
+            self.PLACEHOLDERS["code_output"],
+            read_only=False
         )
 
-        # Input/output fields' events:
+        self.exec_output_label = TextBoxLabel(
+            self.LABELS["exec_output"]
+        )
+        self.exec_output = CodeField(
+            self.PLACEHOLDERS["exec_output"],
+            read_only=True
+        )
+
+        self.exec_status_label = TextBoxLabel(
+            self.LABELS["exec_status"]
+        )
+        self.exec_status = CodeField(
+            self.PLACEHOLDERS["exec_status"],
+            read_only=True
+        )
+
+    def setup_buttons(self) -> None:
+        """Set up control buttons."""
+        self.clear_button = QPushButton(self.LABELS["clear_button"])
+        self.execute_button = QPushButton(self.LABELS["exec_button"])
+
+    def setup_event_handlers(self) -> None:
+        """Set up event handlers."""
         self.code_input.text.textChanged.connect(  # type: ignore
             self.translate_input
         )
 
-        # Control buttons:
-        self.clear_button = QPushButton(self.HEADERS["clear_button"])
-        self.execute_button = QPushButton(self.HEADERS["exec_button"])
-
-        # Control buttons' events:
         self.clear_button.clicked.connect(  # type: ignore
             self.code_input.text.clear
         )
+
         self.clear_button.clicked.connect(  # type: ignore
             self.code_output.text.clear
         )
+
         self.clear_button.clicked.connect(  # type: ignore
             self.exec_output.text.clear
         )
+
         self.clear_button.clicked.connect(  # type: ignore
             self.exec_status.text.clear
         )
+
         self.execute_button.clicked.connect(  # type: ignore
             self.execute_code
         )
 
-        # Layouts:
+    def setup_layout(self) -> None:
+        """Set up the window layout."""
         layout = QGridLayout()
         layout.setRowMinimumHeight(2, 0)
         layout.setVerticalSpacing(10)
@@ -161,133 +178,36 @@ class TextInputWindow(QMainWindow):
         self.central_widget.setLayout(layout)
         self.setCentralWidget(self.central_widget)
 
-        # Display settings:
-        screen = QScreen.geometry(QApplication.primaryScreen())
-        self.resize(int(screen.width() * .8), int(screen.height() * .8))
-
     def translate_input(self) -> None:
         """Translate the input code into a valid Python code."""
         scanner = Scanner(self.code_input.text.toPlainText(), 2)
         scanner.scan()
-
-        # Strip the code and add a single newline at the end:
         self.code_output.text.setText(scanner.render().strip() + '\n')
 
     def execute_code(self) -> None:
         """Execute the code and display outputs."""
-        # Standard output redirection:
         tmp = sys.stdout
-        sys.stdout = redirect = StringIO()
+        sys.stdout = StringIO()  # Redirect standard output.
 
-        # Input retrieval:
         code_input = self.code_output.text.toPlainText()
         code_status = "OK"
 
-        # Code execution:
         try:
-            if code_input:  # If there is code to execute.
+            if code_input:
                 exec(code_input)
-                code_output = f"{redirect.getvalue().strip()}"
+                code_output = f"{sys.stdout.getvalue().strip()}"
             else:
                 code_output = "No executable code found."
 
-        # Exception + traceback display:
         except Exception as exception:
             code_output = ''
+            code_status = str(exception).capitalize()
 
-            filtered_traceback = re.sub(
-                r"(\s*)File(.*)(\s*)exec\(code_string\)", '',
-                traceback.format_exc()
-            ).replace("  ", "    ")
-
-            code_status = f"{Exception.__name__}:\n    {exception}\n\n" \
-                + f"{filtered_traceback}"
-
-        # Output fields' update:
         finally:
             self.exec_output.text.setText(code_output.strip())
             self.exec_status.text.setText(code_status.strip())
 
-            sys.stdout = tmp  # Restores standard output.
-
-    def closeEvent(self, event: Any) -> None:
-        """Reset the layout when the window is closed."""
-        self.layout_parent.reset_layout(event)
-        event.accept()
-
-
-class InformationWindow(QMainWindow):
-    """Usage information window.
-
-    Attributes:
-        layout_parent: The parent layout.
-    """
-
-    HEADERS: dict[str, str] = {
-        "title": "Pseudo Code Parser · Usage Information"
-    }
-
-    def __init__(self, layout_parent) -> None:
-        """Initialize the window.
-
-        Args:
-            layout_parent: The parent layout.
-        """
-        super().__init__()
-        self.layout_parent = layout_parent
-
-        self.setWindowTitle(self.HEADERS["title"])
-
-        widget = QWidget()
-        layout = QVBoxLayout()
-
-        #  Information text:
-        header_1 = Title("Pseudo Code Parser")
-        paragraph_1 = Subtitle(
-            "The parser is a simple tool that allows you to write pseudo code"
-            + " and execute it in a Python environment. The program will parse"
-            + " the code and convert it into Python code so that it can be "
-            + "executed."
-        )
-
-        header_2 = Title("Usage")
-        paragraph_2 = Subtitle("""
-The parser is divided into two modes: text mode and image mode.
-
-In text mode, you can write pseudo code in the text area on the left and
-execute it using the button that says "Execute code", located on top of the
-window. You can also clear the input using the button that says "Clear input".
-The output of the code execution will be displayed on the bottom side of the
-window.
-
-Furthermore, you might notice that the text area on the right displays updated
-Python code as you write pseudo code. This is the parsed code, which is the
-code that will be executed when you press the "Execute code" button. If, by
-any change, the execution returns an error code due to a parsing feature that
-is not yet implemented, you can directly edit the code in the right text area,
-fix the issue and execute it.
-
-Image mode is yet to be implemented. Stay tuned!""")
-
-        layout.addWidget(header_1)
-        layout.addWidget(paragraph_1)
-        layout.addWidget(header_2)
-        layout.addWidget(paragraph_2)
-
-        padding = QHBoxLayout()
-
-        padding.addWidget(QWidget())
-        padding.addLayout(layout)
-        padding.addWidget(QWidget())
-
-        widget.setLayout(padding)
-
-        self.setCentralWidget(QScrollArea())
-        self.centralWidget().setWidgetResizable(False)  # type: ignore
-        self.centralWidget().setWidget(widget)  # type: ignore
-
-        screen = QScreen.geometry(QApplication.primaryScreen())
-        self.resize(int(screen.width() * .6), int(screen.height() * .8))
+            sys.stdout = tmp  # Restore standard output.
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Reset the layout when the window is closed."""
@@ -299,101 +219,110 @@ class MainWindow(QMainWindow):
     """Primary window of the application.
 
     Attributes:
-        window_1: The information window.
-        window_2: The text input window.
-        info_button: The button that opens the information window.
-        text_input_button: The button that opens the text input window.
+        LABELS (dict): labels for the window.
+        URL (str): URL for the application's GitHub page.
+        input_window (InputWindow): input window.
+        layout_parent (LayoutParent): layout parent.
+        logo_image (QLabel): logo image.
+        slogan (QLabel): slogan label.
+        copyright_footer (QLabel): copyright label.
+        info_button (QPushButton): info button.
+        text_info_button (QLabel): text info button.
     """
 
-    HEADERS = {
+    LABELS = {
         "title": "Pseudo Code Parser"
     }
+
+    URL = "https://github.com/erlete/pseudo-code-translator/wiki/Welcome!"
 
     def __init__(self):
         """Initialize the window."""
         super().__init__()
 
-        self.setWindowTitle(self.HEADERS["title"])
+        self.setWindowTitle(self.LABELS["title"])
 
-        self.window_1 = InformationWindow(self)
-        self.window_2 = TextInputWindow(self)
+        self.setup_fields()
+        self.setup_buttons()
+        self.setup_event_handlers()
+        self.setup_layout()
 
-        header_1 = Title(self)
-        header_1.setPixmap(QPixmap("./media/logo_text.png"))
-        header_1.setScaledContents(True)
+        screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(int(screen.width() * .3), int(screen.height() * .5))
+        self.setFixedSize(self.size())
 
-        header_2 = Subtitle(
-            "The ultimate solution for students"
-            + "\nstruggling to understand how"
-            + "\npseudo code works"
+    def setup_fields(self) -> None:
+        """Set up the window fields."""
+        self.input_window = InputWindow(self)
+
+        self.logo_image = Title(self)
+        self.logo_image.setPixmap(QPixmap(
+            "S:/development/repositories/pseudo-code-parser/media/"
+            + "logo_text.png"
+        ))
+        self.logo_image.setScaledContents(False)
+
+        self.slogan = Subtitle(
+            "The ultimate solution for students struggling"
+            + "\nto understand how pseudo code works"
         )
 
-        self.info_button = QPushButton("How to use the parser?")
-        self.text_input_button = QPushButton("Text input")
-
-        self.info_button.clicked.connect(self.set_info_screen)
-        self.text_input_button.clicked.connect(self.set_text_input_screen)
-
-        footer = Footer(
-            "For more information about my work, please visit"
-            + "\nhttps://github.com/erlete"
-            + "\n\nHope you like it! :)"
-            + "\n\n© erlete, 2022, All Rights Reserved"
+        self.copyright_footer = Footer(
+            "© erlete, 2022 - 2023, All Rights Reserved"
         )
 
-        # create main widget
+    def setup_buttons(self) -> None:
+        """Set up control buttons."""
+        self.info_button = QPushButton("Usage instructions")
+        self.text_input_button = QPushButton("Translator")
+
+    def setup_event_handlers(self) -> None:
+        """Set up event handlers."""
+        self.info_button.clicked.connect(  # type: ignore
+            lambda: QDesktopServices.openUrl(QUrl(self.URL))
+        )
+        self.text_input_button.clicked.connect(  # type: ignore
+            self.set_input_window
+        )
+
+    def setup_layout(self) -> None:
+        """Set up the window layout."""
         self.widget = QWidget()
 
-        # create a stacked layout
         self.stacked_layout = QStackedLayout()
         self.stacked_layout.setCurrentIndex(0)
 
-        # add the widgets to the stacked layout
         self.stacked_layout.addWidget(self.widget)
-        self.stacked_layout.addWidget(self.window_1)
-        self.stacked_layout.addWidget(self.window_2)
+        self.stacked_layout.addWidget(self.input_window)
 
         self.padding = QHBoxLayout()
 
         self.window_area = QVBoxLayout()
-        self.window_area.addWidget(header_1)
-        self.window_area.addWidget(header_2)
+        self.window_area.addWidget(self.logo_image)
+        self.window_area.addWidget(self.slogan)
         self.window_area.addWidget(self.info_button)
         self.window_area.addWidget(self.text_input_button)
-        self.window_area.addWidget(footer)
+        self.window_area.addWidget(self.copyright_footer)
 
-        MARGINS = (30, 30, 30, 30)
-        self.window_area.setContentsMargins(*MARGINS)
+        self.window_area.setContentsMargins(30, 30, 30, 30)
 
         self.padding.addWidget(QWidget())
         self.padding.addLayout(self.window_area)
         self.padding.addWidget(QWidget())
 
-        # self.widget.setLayout(self.window_area)
         self.widget.setLayout(self.padding)
         self.setCentralWidget(self.widget)
 
-        # Screen resizing:
-        screen = QScreen.geometry(QApplication.primaryScreen())
-        self.resize(int(screen.width() * .4), int(screen.height() * .6))
-        # prevent resizing
-        self.setFixedSize(self.size())
-
-    def set_info_screen(self) -> None:
-        """Set the information screen."""
+    def set_input_window(self) -> None:
+        """Set the code input screen."""
         self.stacked_layout.setCurrentIndex(1)
-        self.hide()
-
-    def set_text_input_screen(self) -> None:
-        """Set the text input screen."""
-        self.stacked_layout.setCurrentIndex(2)
         self.hide()
 
     def reset_layout(self, event: QCloseEvent) -> None:
         """Get the previous window or close the application.
 
         Args:
-            event: The close event.
+            event: the close event.
         """
         if event:
             self.stacked_layout.setCurrentIndex(0)
