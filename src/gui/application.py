@@ -58,7 +58,7 @@ class InputWindow(QMainWindow):
     """
 
     LABELS: dict[str, str] = {
-        "title": "Pseudo Code Parser · Text Mode",
+        "title": "Pseudo Code Translator · Input Window",
         "clear_button": "Clear fields",
         "exec_button": "Execute code",
         "code_input": "Code input",
@@ -243,7 +243,7 @@ class MainWindow(QMainWindow):
     """
 
     LABELS = {
-        "title": "Pseudo Code Parser"
+        "title": "Pseudo Code Translator · v3.0"
     }
 
     URL = "https://github.com/erlete/pseudo-code-translator/wiki/Welcome!"
