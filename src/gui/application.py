@@ -8,11 +8,12 @@ Authors:
     Paulo Sanchez (@erlete)
 """
 
+import os
 import sys
 from io import StringIO
 
 from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QCloseEvent, QDesktopServices, QPixmap, QScreen
+from PyQt6.QtGui import QCloseEvent, QDesktopServices, QIcon, QPixmap, QScreen
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
                              QMainWindow, QPushButton, QStackedLayout,
                              QVBoxLayout, QWidget)
@@ -20,6 +21,16 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
 from ..core.scanner import Scanner
 from .labels import Footer, Subtitle, TextBoxLabel, Title
 from .text_boxes import CodeField
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 
 class InputWindow(QMainWindow):
@@ -72,6 +83,7 @@ class InputWindow(QMainWindow):
         super().__init__()
         self.layout_parent = layout_parent
 
+        self.setWindowIcon(QIcon(resource_path("icon.ico")))
         # Window title and central widget:
         self.setWindowTitle(self.LABELS["title"])
         self.central_widget = QWidget()
@@ -240,6 +252,7 @@ class MainWindow(QMainWindow):
         """Initialize the window."""
         super().__init__()
 
+        self.setWindowIcon(QIcon(resource_path("icon.ico")))
         self.setWindowTitle(self.LABELS["title"])
 
         self.setup_fields()
@@ -256,10 +269,7 @@ class MainWindow(QMainWindow):
         self.input_window = InputWindow(self)
 
         self.logo_image = Title(self)
-        self.logo_image.setPixmap(QPixmap(
-            "S:/development/repositories/pseudo-code-parser/media/"
-            + "logo_text.png"
-        ))
+        self.logo_image.setPixmap(QPixmap(resource_path("logo_text.png")))
         self.logo_image.setScaledContents(False)
 
         self.slogan = Subtitle(
