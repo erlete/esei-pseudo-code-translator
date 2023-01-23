@@ -35,7 +35,7 @@ class Scanner:
             log_level (int): the log level to be used.
         """
         self.code = code
-        self.lines = [line.strip() for line in code.lower().splitlines()]
+        self.lines = [line.strip() for line in code.splitlines()]
         self.logger = Logger(log_level)
         self.blocks: list[Block] = []
         self.roots: list[Block] = []
@@ -64,7 +64,7 @@ class Scanner:
                     log_level=0
                 )
 
-                if re.match(block_type.HEADER, line, block_type.FLAGS):
+                if re.match(block_type.HEADER, line, flags=block_type.FLAGS):
                     self.logger.log(
                         f"{di:0>3} - Found header. Recursing...",
                         log_level=1
@@ -118,7 +118,7 @@ class Scanner:
                 log_level=0
             )
 
-            if re.match(header, line, re.IGNORECASE | re.MULTILINE):
+            if re.match(header, line, flags=block_type.FLAGS):
                 self.logger.log(
                     f"({start + di:0>3}) {di:0>3} - Found header. "
                     + "Recursing...",
@@ -139,7 +139,7 @@ class Scanner:
                 else:
                     self.logger.log("No blocks detected", log_level=2)
 
-            if re.match(footer, line, re.IGNORECASE | re.MULTILINE):
+            if re.match(footer, line, flags=block_type.FLAGS):
                 self.logger.log(
                     f"({start + di:0>3}) {di:0>3} - Found footer. "
                     + "Returning to previous call...",

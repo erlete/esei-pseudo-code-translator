@@ -101,7 +101,12 @@ class Expression(InterpreterConfig):
             str: line of code with translated operators.
         """
         for expression, replacement in self.OPERATORS.items():
-            code = re.sub(expression, replacement, code)
+            code = re.sub(
+                expression,
+                replacement,
+                code,
+                flags=re.MULTILINE | re.IGNORECASE
+            )
 
         return code
 
@@ -115,8 +120,12 @@ class Expression(InterpreterConfig):
             str: line of code with translated identifiers.
         """
         for expression, replacement in self.IDENTIFIERS.items():
-            code = re.sub(expression, replacement, code)
-
+            code = re.sub(
+                expression,
+                replacement,
+                code,
+                flags=re.MULTILINE | re.IGNORECASE
+            )
         return code
 
     @staticmethod
@@ -129,7 +138,7 @@ class Expression(InterpreterConfig):
         Returns:
             str: string without spaces.
         """
-        return re.sub(r"\s+", "", text)
+        return re.sub(r"\s+", "", text, flags=re.MULTILINE | re.IGNORECASE)
 
     def __str__(self) -> str:
         """Return the expression as a string.
@@ -359,7 +368,7 @@ class Block(InterpreterConfig):
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 matches = (
-                    re.match(exp, line, self.FLAGS)
+                    re.match(exp, line, flags=self.FLAGS)
                     for exp in [self._header, self._footer] + list(
                         self.BREAKPOINTS if self.BREAKPOINTS is not None
                         else []
@@ -422,7 +431,7 @@ class Block(InterpreterConfig):
             else:
                 replaced = False
                 for match, replacement in self.BREAKPOINTS.items():
-                    if re.match(match, str(line), self.FLAGS):
+                    if re.match(match, str(line), flags=self.FLAGS):
                         lines.append(f"{outer_ind}{replacement}")
                         replaced = True
                         break
@@ -631,13 +640,13 @@ class ForLoop(Block):
         with_step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
             self._header,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
         without_step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+hacer$",
             self._header,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
         head = (with_step if with_step is not None else without_step).groups()
@@ -668,7 +677,7 @@ class ForLoop(Block):
             r"^fin_desde$",
             '',
             self._footer,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
 
@@ -695,7 +704,7 @@ class WhileLoop(Block):
             re.match(
                 r"^mientras\s+(.+?)\s+hacer$",
                 self._header,
-                self.FLAGS
+                flags=self.FLAGS
             ).groups()[0]
         )
 
@@ -711,7 +720,7 @@ class WhileLoop(Block):
             r"^fin_mientras$",
             '',
             self._footer,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
 
@@ -746,7 +755,7 @@ class DoWhileLoop(Block):
             re.match(
                 r"^mientras\s+(.+?)$",
                 self._footer,
-                self.FLAGS
+                flags=self.FLAGS
             ).groups()[0]
         )
 
@@ -839,7 +848,7 @@ class IfStatement(Block):
             re.match(
                 r"^si\s+(.+?)\s+entonces$",
                 self._header,
-                self.FLAGS
+                flags=self.FLAGS
             ).groups()[0]
         )
 
@@ -855,7 +864,7 @@ class IfStatement(Block):
             r"^fin_si$",
             '',
             self._footer,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
 
@@ -885,7 +894,7 @@ class MatchStatement(Block):
             re.match(
                 r"^caso\s+(.+?)\s+sea$",
                 self._header,
-                self.FLAGS
+                flags=self.FLAGS
             ).groups()[0]
         )
 
@@ -897,7 +906,7 @@ class MatchStatement(Block):
             r"^fin_caso$",
             '',
             self._footer,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
     def _translate_body(self) -> None:
@@ -909,13 +918,13 @@ class MatchStatement(Block):
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 matches = (
-                    re.match(exp, line, self.FLAGS)
+                    re.match(exp, line, flags=self.FLAGS)
                     for exp in [self._header, self._footer] + list(
                         self.BREAKPOINTS if self.BREAKPOINTS is not None
                         else []
                     )
                 )
-                if not all(matches) and "si_no" not in line:
+                if not all(matches) and "si_no" not in line.lower():
                     if ':' not in line and line != '':
                         self.lines[i] = Expression(f"case _: {line}")
 
@@ -990,7 +999,7 @@ class Main(Function):
             r"^fin$",
             'main()',
             self._footer,
-            self.FLAGS
+            flags=self.FLAGS
         )
 
 

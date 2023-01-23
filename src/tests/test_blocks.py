@@ -9,7 +9,7 @@ def strip(string: str) -> str:
     lines = string.splitlines()
     return "\n".join([
         line.rstrip() for line in lines
-        if not re.match(r"^\s*$", line, re.MULTILINE)
+        if not re.match(r"^\s*$", line, flags=re.MULTILINE | re.IGNORECASE)
     ])
 
 
