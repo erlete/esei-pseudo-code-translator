@@ -88,8 +88,8 @@ class Expression:
 
     def _translate(self):
         """Translate the expression into a valid Python statement."""
-        self._body = self._translate_operators(
-            self._translate_identifiers(
+        self._body = self._translate_identifiers(
+            self._translate_operators(
                 self._body
             )
         )
