@@ -1,3 +1,4 @@
+ALGORITMO test_do_while_loop_1
 INICIO
     x <- 0
     HACER

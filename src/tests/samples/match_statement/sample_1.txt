@@ -1,3 +1,4 @@
+ALGORITMO test_match_statement_1
 INICIO
     x <- 2
     CASO x SEA
