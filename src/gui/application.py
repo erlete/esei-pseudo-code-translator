@@ -11,7 +11,7 @@ Authors:
 import os
 import sys
 from io import StringIO
-
+from ..core.code import Code
 import regex as re
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QCloseEvent, QDesktopServices, QIcon, QPixmap, QScreen
@@ -195,13 +195,8 @@ class InputWindow(QMainWindow):
         """Translate the input code into a valid Python code."""
         scanner = Scanner(self.code_input.text.toPlainText())
         scanner.scan()
-        code = re.sub(
-            r"^main\(\)",
-            '',
-            scanner.render().strip(),
-            flags=re.MULTILINE | re.IGNORECASE
-        )
-        self.code_output.text.setText(code + '\n\nmain()')
+        code = Code(scanner)
+        self.code_output.text.setText(code.render())
 
     def execute_code(self) -> None:
         """Execute the code and display outputs."""

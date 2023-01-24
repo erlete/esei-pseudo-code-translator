@@ -2,6 +2,7 @@ import os
 
 import regex as re
 
+from ..core.code import Code
 from ..core.scanner import Scanner
 
 
@@ -56,8 +57,9 @@ class BaseTest:
 
             scanner = Scanner(sample)
             scanner.scan()
+            code = Code(scanner)
 
-            assert strip(scanner.render()) == strip(validation)
+            assert strip(code.render()) == strip(validation)
 
 
 class TestIfStatement(BaseTest):

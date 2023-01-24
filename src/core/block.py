@@ -194,6 +194,8 @@ class Block:
         self._footer = self.lines[-1]
         self.parent: Block | None = None
         self.children: list[Block] = list()
+        self.top: list[Expression] = list()
+        self.bottom: list[Expression] = list()
 
     @staticmethod
     def indent(text: Any, indentation_level: int) -> str:
@@ -914,7 +916,6 @@ class Function(Block):
         identifiers = []
         args = tuple([arg for arg in args if arg])
         for arg in args:
-            print(f"{arg = }")
             components = re.match(
                 r"^(.*?)\s+(.*?):\s+(.*?)$",
                 arg,
@@ -1048,7 +1049,8 @@ class Main(Function):
             str | None: the translated footer or None, if the process was not
                 successful.
         """
-        return "main()"
+        self.bottom.append("main()")
+        return ''
 
 
 TYPES: Any = (
