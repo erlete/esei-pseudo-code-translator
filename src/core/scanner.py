@@ -7,6 +7,7 @@ Authors:
 
 import regex as re
 
+from ..config import RegexConfig
 from .block import TYPES, Block
 
 
@@ -73,14 +74,14 @@ class Scanner:
             for block_type in TYPES:
                 header, footer = block_type.HEADER, block_type.FOOTER
 
-                if re.match(header, line, flags=block_type.FLAGS):
+                if re.match(header, line, flags=RegexConfig.FLAGS):
                     blocks.extend(self._scan(start + i + 1))
 
                     if blocks:
                         indices = {block.end: block for block in blocks}
                         i = indices[max(indices)].end - start
 
-                if re.match(footer, line, flags=block_type.FLAGS):
+                if re.match(footer, line, flags=RegexConfig.FLAGS):
                     blocks.append(
                         block_type(
                             self.lines[start - 1:start + i + 1],

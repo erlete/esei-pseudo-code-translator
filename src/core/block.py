@@ -152,7 +152,7 @@ class Expression:
         return f"Expression(\"{self.body}\")"
 
 
-class Block(InterpreterConfig):
+class Block:
     """Structural class for code organization and rendering.
 
     This class is used to represent a block of code, isolate it in order to
@@ -174,7 +174,6 @@ class Block(InterpreterConfig):
     HEADER: str | None = None
     FOOTER: str | None = None
     BREAKPOINTS: dict[str, str] = {}
-    FLAGS: int = re.IGNORECASE | re.MULTILINE
 
     def __init__(self, lines: Any[str | Block], start: int, end: int) -> None:
         """Initialize a new block.
@@ -231,7 +230,7 @@ class Block(InterpreterConfig):
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 matches = (
-                    re.match(exp, line, flags=self.FLAGS)
+                    re.match(exp, line, flags=RegexConfig.FLAGS)
                     for exp in [self._header, self._footer] + list(
                         self.BREAKPOINTS if self.BREAKPOINTS is not None
                         else []
@@ -278,7 +277,7 @@ class Block(InterpreterConfig):
         Returns:
             list[str]: list of lines of code.
         """
-        spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
+        spacing = EditorConfig.SPACES_PER_TAB * EditorConfig.INDENTATION_CHAR
         outer_ind = indentation_level * spacing
         inner_ind = (indentation_level + 1) * spacing
 
@@ -294,7 +293,7 @@ class Block(InterpreterConfig):
             else:
                 replaced = False
                 for match, replacement in self.BREAKPOINTS.items():
-                    if re.match(match, str(line), flags=self.FLAGS):
+                    if re.match(match, str(line), flags=RegexConfig.FLAGS):
                         lines.append(f"{outer_ind}{replacement}")
                         replaced = True
                         break
@@ -503,13 +502,13 @@ class ForLoop(Block):
         with_step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
             self._header,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
         without_step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+hacer$",
             self._header,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
         head = (with_step if with_step is not None else without_step).groups()
@@ -540,7 +539,7 @@ class ForLoop(Block):
             r"^fin_desde$",
             '',
             self._footer,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
 
@@ -567,7 +566,7 @@ class WhileLoop(Block):
             re.match(
                 r"^mientras\s+(.+?)\s+hacer$",
                 self._header,
-                flags=self.FLAGS
+                flags=RegexConfig.FLAGS
             ).groups()[0]
         )
 
@@ -583,7 +582,7 @@ class WhileLoop(Block):
             r"^fin_mientras$",
             '',
             self._footer,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
 
@@ -618,7 +617,7 @@ class DoWhileLoop(Block):
             re.match(
                 r"^mientras\s+(.+?)$",
                 self._footer,
-                flags=self.FLAGS
+                flags=RegexConfig.FLAGS
             ).groups()[0]
         )
 
@@ -653,7 +652,7 @@ class DoWhileLoop(Block):
         Returns:
             list[str]: list of lines of code.
         """
-        spacing = self.SPACES_PER_TAB * self.INDENTATION_CHAR
+        spacing = EditorConfig.SPACES_PER_TAB * EditorConfig.INDENTATION_CHAR
         outer_ind = indentation_level * spacing
         inner_ind = (indentation_level + 1) * spacing
 
@@ -711,7 +710,7 @@ class IfStatement(Block):
             re.match(
                 r"^si\s+(.+?)\s+entonces$",
                 self._header,
-                flags=self.FLAGS
+                flags=RegexConfig.FLAGS
             ).groups()[0]
         )
 
@@ -727,7 +726,7 @@ class IfStatement(Block):
             r"^fin_si$",
             '',
             self._footer,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
 
@@ -757,7 +756,7 @@ class MatchStatement(Block):
             re.match(
                 r"^caso\s+(.+?)\s+sea$",
                 self._header,
-                flags=self.FLAGS
+                flags=RegexConfig.FLAGS
             ).groups()[0]
         )
 
@@ -769,7 +768,7 @@ class MatchStatement(Block):
             r"^fin_caso$",
             '',
             self._footer,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
     def _translate_body(self) -> None:
@@ -781,7 +780,7 @@ class MatchStatement(Block):
         for i, line in enumerate(self.lines):
             if not isinstance(line, Block):
                 matches = (
-                    re.match(exp, line, flags=self.FLAGS)
+                    re.match(exp, line, flags=RegexConfig.FLAGS)
                     for exp in [self._header, self._footer] + list(
                         self.BREAKPOINTS if self.BREAKPOINTS is not None
                         else []
@@ -862,7 +861,7 @@ class Main(Function):
             r"^fin$",
             'main()',
             self._footer,
-            flags=self.FLAGS
+            flags=RegexConfig.FLAGS
         )
 
 
