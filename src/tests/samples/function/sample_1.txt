@@ -1,0 +1,7 @@
+Entero FUNCION test()
+VARIABLES
+    x: Entero
+INICIO
+    x <- 1
+    DEVOLVER x
+FIN_FUNCION

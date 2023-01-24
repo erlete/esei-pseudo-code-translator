@@ -18,7 +18,8 @@ CLASS_NAMES = {
     "TestMatchStatement": "match_statement",
     "TestForLoop": "for_loop",
     "TestWhileLoop": "while_loop",
-    "TestDoWhileLoop": "do_while_loop"
+    "TestDoWhileLoop": "do_while_loop",
+    "TestFunction": "function"
 }
 
 
@@ -84,6 +85,12 @@ class TestWhileLoop(BaseTest):
 
 
 class TestDoWhileLoop(BaseTest):
+
+    def test(self):
+        self.block_test()
+
+
+class TestFunction(BaseTest):
 
     def test(self):
         self.block_test()
