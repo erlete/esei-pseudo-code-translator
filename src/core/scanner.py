@@ -141,7 +141,7 @@ class Scanner:
     def _collapse(self) -> None:
         """Collapse the contents of the blocks."""
         for root in sorted(self.roots):
-            root.fold()
+            root.collapse()
 
     def _translate(self) -> None:
         """Translate scanned blocks."""

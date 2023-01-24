@@ -239,12 +239,12 @@ class Block:
                 if not all(matches):
                     self.lines[i] = Expression(line)
 
-    def fold(self) -> None:
-        """Fold blocks that contain children blocks.
+    def collapse(self) -> None:
+        """Collapse blocks that contain children blocks.
 
-        This method is used to fold blocks that contain children blocks. This
-        is done by replacing the lines of the parent block with the children
-        blocks. This method is called recursively on the children blocks.
+        This method is used to replace the children blocks' content in the body
+        of the parent with a reference to the child. This way, blocks can be
+        easily manipulated without line indices limitations.
 
         Note:
             This method should only be called on the root blocks in order to
@@ -259,7 +259,7 @@ class Block:
             reduction += end_i - start_i - 1
 
         for child in sorted(self.children):
-            child.fold()
+            child.collapse()
 
     def render(self, indentation_level: int = 0,
                no_recursion: bool = False) -> list[str]:
