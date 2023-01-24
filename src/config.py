@@ -24,12 +24,11 @@ class RegexConfig:
     FLAGS = re.MULTILINE | re.IGNORECASE
 
 
-class InterpreterConfig:
-    """Base class for interpreter configuration.
+class EditorConfig:
+    """Base class for editor configuration.
 
     This class provides with some attributes that allow customization of the
-    Python interpreter emulated inside the application. The are also used to
-    properly indent the translated code.
+    code editor emulated inside the application.
 
     Attributes:
         SPACES_PER_TAB (int): number of spaces per tab.

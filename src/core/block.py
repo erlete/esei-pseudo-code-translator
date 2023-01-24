@@ -15,7 +15,7 @@ from typing import Any
 
 import regex as re
 
-from ..config import InterpreterConfig, RegexConfig
+from ..config import EditorConfig, RegexConfig
 
 
 class Expression:
