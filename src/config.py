@@ -8,12 +8,28 @@ Authors:
 """
 
 
+import regex as re
+
+
+class RegexConfig:
+    """Base class for regular expresion usage configuration.
+
+    This class provides with some attributes that allow customization of the
+    regular expression instructions used by the rest of the modules.
+
+    Attributes:
+        FLAGS (Any): collection of regex flags for pattern matching.
+    """
+
+    FLAGS = re.MULTILINE | re.IGNORECASE
+
+
 class InterpreterConfig:
     """Base class for interpreter configuration.
 
     This class provides with some attributes that allow customization of the
-    emulated Python interpreter. These attributes are used by the `Block` class
-    to render the code.
+    Python interpreter emulated inside the application. The are also used to
+    properly indent the translated code.
 
     Attributes:
         SPACES_PER_TAB (int): number of spaces per tab.
