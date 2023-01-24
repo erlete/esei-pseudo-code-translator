@@ -14,30 +14,30 @@ from __future__ import annotations
 from typing import Any
 
 import regex as re
-from ..config import InterpreterConfig
 
-class Expression(InterpreterConfig):
-    """Class for single instruction translation.
+from ..config import InterpreterConfig, RegexConfig
+
+
+class Expression:
+    """Class for single statement translation.
 
     This class is used to translate a single line of code into a valid Python
-    expression. It also provides with some methods to compare and hash the
     expression.
 
     Attributes:
         body (str): line of code.
-        start (int): index of the line in the original code.
-        OPERATORS (dict[str, str]): dictionary of operators to translate.
-        IDENTIFIERS (dict[str, str]): dictionary of identifiers to translate.
+        OPERATORS (dict[str, str]): dictionary of operator translations.
+        IDENTIFIERS (dict[str, str]): dictionary of identifier translations.
+        REPR_LIMIT (int): the character limit for the collapsed representation
+            of the expression.
     """
 
-    OPERATORS = {
+    OPERATORS: dict[str, str] = {
         r"\/\/": '#',
-        r"\/\*": "\"\"\"",
-        r"\*\/": "\"\"\"",
         r'(.*[^<>!])=(.*)': r"\1 == \2",
         r"(.*?)\s*<-\s*(.*)": r"\1 = \2",
         r"(.*?)\s*<>\s*(.*)": r"\1 != \2",
-        r"(.*?)\s*mod\s*(.*)": r"\1 % \2",
+        r"(.*?)\s*MOD\s*(.*)": r"\1 % \2",
         r"(.*?)\s*==\s*(.*)": r"\1 == \2",
         r"\b(\w+)\s*<\s*(\w+)\b": r"\1 < \2",
         r"\b(\w+)\s*>\s*(\w+)\b": r"\1 > \2",
@@ -49,47 +49,66 @@ class Expression(InterpreterConfig):
         r"(.*?)\s*\/\s*(.*)": r"\1 / \2"
     }
 
-    IDENTIFIERS = {
-        r"escribir\s*\((.*)\)": r"print(\1)",
-        r"leer\s*\((.*)\)": r"\1 = input('Entrada para la variable \1:')"
+    IDENTIFIERS: dict[str, str] = {
+        r"ESCRIBIR\s*\((.*)\)": r"print(\1)",
+        r"LEER\s*\((.*)\)": r"\1 = input()",
+        r"DEVOLVER\s*(.*)": r"return \1",
+        r"Entero": "int",
+        r"Real": "float"
     }
 
-    def __init__(self, line: str, start: int = 0) -> None:
+    REPR_LIMIT: int = 15
+
+    def __init__(self, code: str) -> None:
         """Initialize the expression.
 
         Args:
-            line (str): line of code.
-            start (int): index of the line in the original code.
+            code (str): body of the expression.
         """
-        self.type = None
-        self.body = line.strip()
-        self.start = start
+        self.body = code.strip()
 
+    @property
+    def body(self) -> str:
+        """Get the body attribute value.
+
+        Returns:
+            str: the body attribute value.
+        """
+        return self._body
+
+    @body.setter
+    def body(self, value: Any) -> None:
+        """Set the body attribute value.
+
+        Args:
+            value (Any): the value of the body attribute.
+        """
+        self._body = str(value)
         self._translate()
 
     def _translate(self):
-        """Translate the expression into a valid Python expression.
-
-        This method is automatically called when the object is initialized.
-        """
-        t_operators = self._translate_operators(self.body)
-        self.body = self._translate_identifiers(t_operators)
+        """Translate the expression into a valid Python statement."""
+        self._body = self._translate_operators(
+            self._translate_identifiers(
+                self._body
+            )
+        )
 
     def _translate_operators(self, code: str) -> str:
         """Translate operators in the expression.
 
         Args:
-            code (str): line of code.
+            code (str): body of the expression.
 
         Returns:
-            str: line of code with translated operators.
+            str: body of the expression with translated operators.
         """
         for expression, replacement in self.OPERATORS.items():
             code = re.sub(
                 expression,
                 replacement,
                 code,
-                flags=re.MULTILINE | re.IGNORECASE
+                flags=RegexConfig.FLAGS
             )
 
         return code
@@ -98,179 +117,39 @@ class Expression(InterpreterConfig):
         """Translate identifiers in the expression.
 
         Args:
-            code (str): line of code.
+            code (str): body of the expression.
 
         Returns:
-            str: line of code with translated identifiers.
+            str: body of the expression with translated identifiers.
         """
         for expression, replacement in self.IDENTIFIERS.items():
             code = re.sub(
                 expression,
                 replacement,
                 code,
-                flags=re.MULTILINE | re.IGNORECASE
+                flags=RegexConfig.FLAGS
             )
+
         return code
 
-    @staticmethod
-    def no_spaces(text: str) -> str:
-        """Remove all spaces from a string.
-
-        Args:
-            text (str): string to remove spaces from.
-
-        Returns:
-            str: string without spaces.
-        """
-        return re.sub(r"\s+", "", text, flags=re.MULTILINE | re.IGNORECASE)
-
     def __str__(self) -> str:
-        """Return the expression as a string.
+        """Return the expanded representation of the expression.
 
         Returns:
-            str: expression as a string.
+            str: expanded representation of the expression.
         """
         return self.body
 
     def __repr__(self) -> str:
-        """Return the expression as a string.
+        """Return the collapsed representation of the expression.
 
         Returns:
-            str: expression as a string.
+            str: collapsed representation of the expression.
         """
-        return f"Expression({self.start!r})"
+        if len(self.body) >= self.REPR_LIMIT:
+            return f"Expression(\"{self.body[:self.REPR_LIMIT]}...\")"
 
-    def __eq__(self, other: Any) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expressions are equal, False otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return str(self) == str(other)
-
-    def __ne__(self, other) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expressions are different, False otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return str(self) != str(other)
-
-    def __hash__(self) -> int:
-        """Return the hash of the expression.
-
-        Returns:
-            int: hash of the expression.
-        """
-        return hash(self.body)
-
-    def __gt__(self, other) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expression is greater than the other, False
-                otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return self.start > other.start
-
-    def __lt__(self, other) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expression is lower than the other, False
-                otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return self.start < other.start
-
-    def __ge__(self, other) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expression is greater than or equal to the other,
-                False otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return self.start >= other.start
-
-    def __le__(self, other: Any) -> bool:
-        """Compare two expressions.
-
-        Args:
-            other (Any): object to compare with.
-
-        Raises:
-            TypeError: if other is not a Expression instance.
-
-        Returns:
-            bool: True if the expression is lower than or equal to the other,
-                False otherwise.
-        """
-        if not isinstance(other, Expression):
-            raise TypeError(
-                "cannot compare class Expression with class "
-                + f"{other.__class__.__name__}"
-            )
-
-        return self.start <= other.start
+        return f"Expression(\"{self.body}\")"
 
 
 class Block(InterpreterConfig):
