@@ -68,9 +68,9 @@ class Scanner:
         blocks = []
 
         i = 0
+        safe = []
         while i < len(self.lines[start:]):
             line = self.lines[start:][i]
-
             for block_type in TYPES:
                 if closer is None:
                     closer = block_type
@@ -96,6 +96,9 @@ class Scanner:
                     return blocks
 
             i += 1
+            safe.append(i)
+            if safe != sorted(safe):
+                return blocks
 
         return blocks
 
