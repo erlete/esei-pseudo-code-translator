@@ -12,11 +12,12 @@ import os
 import sys
 from io import StringIO
 
+import regex as re
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QCloseEvent, QDesktopServices, QIcon, QPixmap, QScreen
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
-                             QMainWindow, QPushButton, QStackedLayout,
-                             QVBoxLayout, QWidget)
+                             QInputDialog, QMainWindow, QPushButton,
+                             QStackedLayout, QVBoxLayout, QWidget)
 
 from ..core.scanner import Scanner
 from .labels import Footer, Subtitle, TextBoxLabel, Title
@@ -192,9 +193,15 @@ class InputWindow(QMainWindow):
 
     def translate_input(self) -> None:
         """Translate the input code into a valid Python code."""
-        scanner = Scanner(self.code_input.text.toPlainText(), 2)
+        scanner = Scanner(self.code_input.text.toPlainText())
         scanner.scan()
-        self.code_output.text.setText(scanner.render().strip() + '\n')
+        code = re.sub(
+            r"^main\(\)",
+            '',
+            scanner.render().strip(),
+            flags=re.MULTILINE | re.IGNORECASE
+        )
+        self.code_output.text.setText(code + '\n\nmain()')
 
     def execute_code(self) -> None:
         """Execute the code and display outputs."""
@@ -204,9 +211,24 @@ class InputWindow(QMainWindow):
         code_input = self.code_output.text.toPlainText()
         code_status = "OK"
 
+        def input():
+            text, ok = QInputDialog.getText(
+                self, "Input", "Introduce un valor:")
+            if ok:
+                if '.' in text:
+                    try:
+                        return float(text)
+                    except ValueError:
+                        return text
+                else:
+                    try:
+                        return int(text)
+                    except ValueError:
+                        return text
+
         try:
             if code_input:
-                exec(code_input)
+                exec(code_input, locals(), locals())
                 code_output = f"{sys.stdout.getvalue().strip()}"
             else:
                 code_output = "No executable code found."
@@ -218,6 +240,10 @@ class InputWindow(QMainWindow):
         finally:
             self.exec_output.text.setText(code_output.strip())
             self.exec_status.text.setText(code_status.strip())
+            if code_status != "OK":
+                self.exec_status.text.setStyleSheet("color: red")
+            else:
+                self.exec_status.text.setStyleSheet("color: green")
 
             sys.stdout = tmp  # Restore standard output.
 
