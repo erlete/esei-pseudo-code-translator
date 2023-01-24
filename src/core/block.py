@@ -886,11 +886,117 @@ class Function(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^.+funcion"
+    HEADER = r"^.+funcion.+"
     FOOTER = r"^fin_funcion$"
 
+    @staticmethod
+    def split_args(args: str) -> list[str]:
+        """Split function arguments.
 
-class Procedure(Block):
+        Args:
+            args (str): function arguments.
+
+        Returns:
+            list[str]: list of arguments.
+        """
+        return [arg.strip() for arg in args.split(',')]
+
+    @staticmethod
+    def translate_args(*args: str) -> str:
+        """Translate function arguments.
+
+        Args:
+            arg (str): function arguments.
+
+        Returns:
+            str: translated arguments.
+        """
+        identifiers = []
+        args = tuple([arg for arg in args if arg])
+        for arg in args:
+            print(f"{arg = }")
+            components = re.match(
+                r"^(.*?)\s+(.*?):\s+(.*?)$",
+                arg,
+                flags=RegexConfig.FLAGS
+            ).groups()
+
+            # structural_type = components[0]
+            data_type = components[1]
+            identifier = components[2]
+
+            identifiers.append(Expression(f"{identifier}: {data_type}"))
+
+        return ", ".join(str(identifier) for identifier in identifiers)
+
+    def filter_lines(self):
+        """Filter redundant lines of code from the body."""
+        start = None
+        for i, line in enumerate(self.lines[1:-1]):
+            if not isinstance(line, Block) and start is None and re.match(
+                            r"^INICIO$", line, flags=RegexConfig.FLAGS
+                        ):
+                start = i + 1
+
+        if start is None:
+            return None
+
+        self._header = self.lines[0]
+        self.lines = [self._header] + self.lines[start + 1:]
+
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
+
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
+        """
+        self.filter_lines()
+        components = re.match(
+            r"^(.*?)\s+FUNCION\s+(.*?)\s*\((.*)\)$",
+            self._header,
+            flags=RegexConfig.FLAGS
+        )
+
+        if components is not None:
+            components = components.groups()
+            return_type = Expression(components[0])
+            identifier = components[1]
+            arguments = self.translate_args(*self.split_args(components[2]))
+
+            return f"def {identifier}({arguments}) -> {return_type}:"
+
+        return None
+
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        return ''
+
+    def _translate_body(self) -> list[Expression | Block] | None:
+        """Translate block body to Python code.
+
+        Returns:
+            list[Expression | Block] | None: the translated body as list of
+                Expressions and Blocks or None, if the process was not
+                successful.
+        """
+        lines: list[Expression | Block] = []
+
+        for line in self.lines[1:-1]:
+            if not isinstance(line, Block):
+                lines.append(Expression(line))
+            else:
+                lines.append(line)
+
+        return lines
+
+
+class Procedure(Function):
     """Procedure structural class.
 
     Attributes:
@@ -922,7 +1028,7 @@ class Main(Function):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^inicio$"
+    HEADER = r"^ALGORITMO.*?$"
     FOOTER = r"^fin$"
 
     def _translate_header(self) -> str | None:
@@ -932,6 +1038,7 @@ class Main(Function):
             str | None: the translated header or None, if the process was not
                 successful.
         """
+        self.filter_lines()
         return "def main():"
 
     def _translate_footer(self) -> str | None:
@@ -942,24 +1049,6 @@ class Main(Function):
                 successful.
         """
         return "main()"
-
-    def _translate_body(self) -> list[Expression | Block] | None:
-        """Translate block body to Python code.
-
-        Returns:
-            list[Expression | Block] | None: the translated body as list of
-                Expressions and Blocks or None, if the process was not
-                successful.
-        """
-        lines: list[Expression | Block] = []
-
-        for line in self.lines[1:-1]:
-            if not isinstance(line, Block):
-                lines.append(Expression(line))
-            else:
-                lines.append(line)
-
-        return lines
 
 
 TYPES: Any = (
