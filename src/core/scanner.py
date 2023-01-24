@@ -47,7 +47,7 @@ class Scanner:
         self.blocks = self._scan(start=0)
         self._organize()
 
-    def _scan(self, start: int) -> list[Block]:
+    def _scan(self, start: int, closer: Block | None = None) -> list[Block]:
         """Scan the code and find structural blocks.
 
         This method iterates over each line of code and every defined block
@@ -72,10 +72,13 @@ class Scanner:
             line = self.lines[start:][i]
 
             for block_type in TYPES:
-                header, footer = block_type.HEADER, block_type.FOOTER
+                if closer is None:
+                    closer = block_type
+
+                header, footer = block_type.HEADER, closer.FOOTER
 
                 if re.match(header, line, flags=RegexConfig.FLAGS):
-                    blocks.extend(self._scan(start + i + 1))
+                    blocks.extend(self._scan(start + i + 1, block_type))
 
                     if blocks:
                         indices = {block.end: block for block in blocks}
@@ -83,7 +86,7 @@ class Scanner:
 
                 if re.match(footer, line, flags=RegexConfig.FLAGS):
                     blocks.append(
-                        block_type(
+                        closer(  # type: ignore
                             self.lines[start - 1:start + i + 1],
                             start - 1,
                             start + i
