@@ -171,9 +171,9 @@ class Block:
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER: str | None = None
-    FOOTER: str | None = None
-    BREAKPOINTS: dict[str, str] = {}
+    HEADER: str | None = None  # type: ignore
+    FOOTER: str | None = None  # type: ignore
+    EXCLUDE_LINES: tuple[str] = tuple()  # type: ignore
 
     def __init__(self, lines: Any[str | Block], start: int, end: int) -> None:
         """Initialize a new block.
@@ -190,54 +190,107 @@ class Block:
         self.start = start
         self.end = end
         self._header = self.lines[0]
+        self._body = self.lines[1:-1]
         self._footer = self.lines[-1]
         self.parent: Block | None = None
         self.children: list[Block] = list()
 
-    def translate(self) -> None:
-        """Translate block to Python code."""
-        self._translate_header()
-        self._translate_footer()
-        self._translate_body()
+    @staticmethod
+    def indent(text: Any, indentation_level: int) -> str:
+        """Indent text.
 
-    def _translate_header(self) -> None:
+        Args:
+            text (str): the text to indent.
+            indentation_level (int): the indentation level.
+
+        Returns:
+            str: the indented text.
+        """
+        spacing = EditorConfig.SPACES_PER_TAB * EditorConfig.INDENTATION_CHAR
+        return f"{spacing * indentation_level}{text}"
+
+    def is_excluded(self, line: str) -> bool:
+        """Determine whether a line should be excluded from the translation.
+
+        Args:
+            line (str): the line to be analyzed.
+
+        Returns:
+            bool: True if the line should be excluded, False otherwise.
+        """
+        for expression in self.EXCLUDE_LINES:
+            if re.match(expression, line, flags=RegexConfig.FLAGS):
+                return True
+
+        return False
+
+    def translate(self) -> None:
+        """Translate block to Python code.
+
+        The block is only translated when all three translations (header,
+        footer and body) have a successful output (not None).
+        """
+        outputs = (
+            self._translate_header(),
+            self._translate_footer(),
+            self._translate_body()
+        )
+
+        if all(output is not None for output in outputs):
+            self._header = outputs[0]
+            self._footer = outputs[1]
+            self._body = outputs[2]
+
+    def _translate_header(self) -> str | None:
         """Translate block header to Python code.
 
         This method acts as placeholder for the header translation. It is
         called by the `translate` method and has got a specific
         implementation in each child descendant of the `Block` class.
+
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
         """
         pass
 
-    def _translate_footer(self) -> None:
+    def _translate_footer(self) -> str | None:
         """Translate block footer to Python code.
 
         This method acts as placeholder for the footer translation. It is
         called by the `translate` method after `_translate_header` and
         has got a specific implementation in each child descendant of the
         `Block` class.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
         """
         pass
 
-    def _translate_body(self) -> None:
+    def _translate_body(self) -> list[Expression | Block] | None:
         """Translate block body to Python code.
 
-        This method translates the body of the block, ignoring breakpoints. It
-        is called by the `translate` method after `_translate_header` and
-        `_translate_body` and might have a specific implementation in each
+        This method translates the body of the block, ignoring lines excluded
+        by regular expressions defined in `Block.EXCLUDED_LINES`. It is called
+        by the `translate` method after `_translate_header` and
+        `_translate_footer`. It might have a specific implementation in each
         child descendant of the `Block` class.
+
+        Returns:
+            list[Expression | Block] | None: the translated body as list of
+                Expressions and Blocks or None, if the process was not
+                successful.
         """
-        for i, line in enumerate(self.lines):
-            if not isinstance(line, Block):
-                matches = (
-                    re.match(exp, line, flags=RegexConfig.FLAGS)
-                    for exp in [self._header, self._footer] + list(
-                        self.BREAKPOINTS if self.BREAKPOINTS is not None
-                        else []
-                    )
-                )
-                if not all(matches):
-                    self.lines[i] = Expression(line)
+        lines: list[Expression | Block] = []
+
+        for line in self.lines[1:-1]:
+            if not isinstance(line, Block) and not self.is_excluded(line):
+                lines.append(Expression(line))
+            else:
+                lines.append(line)
+
+        return lines
 
     def collapse(self) -> None:
         """Collapse blocks that contain children blocks.
@@ -261,47 +314,30 @@ class Block:
         for child in sorted(self.children):
             child.collapse()
 
-    def render(self, indentation_level: int = 0,
-               no_recursion: bool = False) -> list[str]:
-        """Render the block.
+    def render(self, indentation_level: int = 0) -> list[str]:
+        """Render the block as indented, expanded code.
 
-        This method is used to render the block recursively. This is done by
-        replacing the children blocks with their rendered versions. This method
-        is called recursively on the children blocks.
+        This method is responsible for expanding nested code blocks and
+        indenting each line so that the output conforms with Python syntax
+        rules. It might have a specific implementation in each child descendant
+        of the `Block` class.
 
         Args:
-            indentation_level (int): indentation level of the block.
-            no_recursion (bool): if True, the children blocks will not be
-                rendered.
+            indentation_level (int): the indentation level of each line.
 
         Returns:
-            list[str]: list of lines of code.
+            list[str]: the indented, expanded lines of code.
         """
-        spacing = EditorConfig.SPACES_PER_TAB * EditorConfig.INDENTATION_CHAR
-        outer_ind = indentation_level * spacing
-        inner_ind = (indentation_level + 1) * spacing
+        lines: list[str] = [self.indent(self._header, indentation_level)]
 
-        lines: list[str] = [f"{outer_ind}{self._header}"]
-        for line in self.lines[1:-1]:
+        for line in self._body:  # type: ignore
             if isinstance(line, Block):
-                if no_recursion:
-                    lines.append(f"{inner_ind}{line!r}")
-                else:
-                    sub_render = line.render(indentation_level + 1)
-                    lines.extend(sub_render)
-
+                sub_render = line.render(indentation_level + 1)
+                lines.extend(sub_render)
             else:
-                replaced = False
-                for match, replacement in self.BREAKPOINTS.items():
-                    if re.match(match, str(line), flags=RegexConfig.FLAGS):
-                        lines.append(f"{outer_ind}{replacement}")
-                        replaced = True
-                        break
+                lines.append(self.indent(line, indentation_level + 1))
 
-                if not replaced:
-                    lines.append(f"{inner_ind}{line}")
-
-        lines.append(f"{outer_ind}{self._footer}")
+        lines.append(self.indent(self._footer, indentation_level))
         return lines
 
     def is_root(self) -> bool:
@@ -496,51 +532,56 @@ class ForLoop(Block):
 
     HEADER = r"^desde.*hacer$"
     FOOTER = r"^fin_desde$"
+    BREAKPOINTS: dict[str, str] = {}
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        with_step = re.match(
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
+
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
+        """
+        step = re.match(
             r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
             self._header,
             flags=RegexConfig.FLAGS
         )
 
-        without_step = re.match(
-            r"^desde\s+(.+?)\s+hasta\s+(.+)\s+hacer$",
+        no_step = re.match(
+            r"^desde\s+(.+?)\s+hasta\s+([^PASO]+?)\s+hacer$",
             self._header,
             flags=RegexConfig.FLAGS
         )
 
-        head = (with_step if with_step is not None else without_step).groups()
+        if step is None and no_step is None:
+            return None
+
+        head = (step if step is not None else no_step).groups()
 
         if "<-" in head[0]:
             iterator = Expression(head[0].split('<-')[0].strip())
             start = Expression(head[0].split('<-')[1].strip())
             end = Expression(head[1])
         else:
-            iterator = Expression(head[0])
-            start = Expression(head[1])
-            end = Expression(head[2])
+            iterator = Expression("_")
+            start = Expression(head[0])
+            end = Expression(head[1])
 
-        if len(head) == 3:
+        if step is not None:
             step = Expression(head[2])
         else:
             step = Expression('1')
 
-        self._header = f"for {iterator} in range({start}, {end} + 1, {step}):"
+        return f"for {iterator} in range({start}, {end} + 1, {step}):"
 
-    def _translate_footer(self) -> None:
-        """Translate the footer of the block.
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
 
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
         """
-        self._footer = re.sub(
-            r"^fin_desde$",
-            '',
-            self._footer,
-            flags=RegexConfig.FLAGS
-        )
+        return ''
 
 
 class WhileLoop(Block):
@@ -560,30 +601,34 @@ class WhileLoop(Block):
     HEADER = r"^mientras.*hacer$"
     FOOTER = r"^fin_mientras$"
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        condition = Expression(
-            re.match(
-                r"^mientras\s+(.+?)\s+hacer$",
-                self._header,
-                flags=RegexConfig.FLAGS
-            ).groups()[0]
-        )
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
 
-        self._header = f"while {condition}:"
-
-    def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
         """
-        self._footer = re.sub(
-            r"^fin_mientras$",
-            '',
-            self._footer,
+        match = re.match(
+            r"^mientras\s+(.+?)\s+hacer$",
+            self._header,
             flags=RegexConfig.FLAGS
         )
+
+        if match is None:
+            return None
+
+        condition = Expression(match.groups()[0])
+
+        return f"while {condition}:"
+
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        return ''
 
 
 class DoWhileLoop(Block):
@@ -603,83 +648,63 @@ class DoWhileLoop(Block):
     HEADER = r"^hacer$"
     FOOTER = r"^mientras.*[^hacer]$"
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        self._header = ''
-
-    def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
-        """
-        condition = Expression(
-            re.match(
-                r"^mientras\s+(.+?)$",
-                self._footer,
-                flags=RegexConfig.FLAGS
-            ).groups()[0]
-        )
-
-        self._footer = ''
-        self._temp = condition
-
-    def _translate_body(self) -> None:
-        """Translate block body to Python code.
-
-        This method is a generic body translation method. It is called in the
-        constructor of the class.
-        """
-        for i, line in enumerate(self.lines):
-            if not isinstance(line, Block):
-                self.lines[i] = Expression(line)
-
-        self._sub_body = self.lines[1:-1]
-
-    def render(self, indentation_level: int = 0,
-               no_recursion: bool = False) -> list[str]:
-        """Render the block.
-
-        This method is used to render the block recursively. This is done by
-        replacing the children blocks with their rendered versions. This method
-        is called recursively on the children blocks.
-
-        Args:
-            indentation_level (int): indentation level of the block.
-            no_recursion (bool): if True, the children blocks will not be
-                rendered.
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
 
         Returns:
-            list[str]: list of lines of code.
+            str | None: the translated header or None, if the process was not
+                successful.
         """
-        spacing = EditorConfig.SPACES_PER_TAB * EditorConfig.INDENTATION_CHAR
-        outer_ind = indentation_level * spacing
-        inner_ind = (indentation_level + 1) * spacing
+        return ''
 
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        header = re.match(
+            r"^mientras\s+(.+?)$",
+            self._footer,
+            flags=RegexConfig.FLAGS
+        )
+
+        if header is None:
+            return None
+
+        self._temp = Expression(header.groups()[0])
+        return ''
+
+    def render(self, indentation_level: int = 0) -> list[str]:
+        """Render the block as indented, expanded code.
+
+        This method is responsible for expanding nested code blocks and
+        indenting each line so that the output conforms with Python syntax
+        rules.
+
+        Args:
+            indentation_level (int): the indentation level of each line.
+
+        Returns:
+            list[str]: the indented, expanded lines of code.
+        """
         lines: list[str] = []
-        for line in self._sub_body:
+        for line in self._body:
             if isinstance(line, Block):
-                if no_recursion:
-                    lines.append(f"{outer_ind}{line!r}")
-                else:
-                    sub_render = line.render(indentation_level)
-                    lines.extend(sub_render)
-
+                sub_render = line.render(indentation_level)
+                lines.extend(sub_render)
             else:
-                lines.append(f"{outer_ind}{line}")
+                lines.append(self.indent(line, indentation_level))
 
-        lines.append(f"{outer_ind}while {self._temp}:")
+        lines.append(self.indent(f"while {self._temp}:", indentation_level))
 
-        for line in self._sub_body:
+        for line in self._body:
             if isinstance(line, Block):
-                if no_recursion:
-                    lines.append(f"{outer_ind}{line!r}")
-                else:
-                    sub_render = line.render(indentation_level + 1)
-                    lines.extend(sub_render)
-
+                sub_render = line.render(indentation_level + 1)
+                lines.extend(sub_render)
             else:
-                lines.append(f"{inner_ind}{line}")
+                lines.append(self.indent(line, indentation_level + 1))
 
         return lines
 
@@ -700,34 +725,83 @@ class IfStatement(Block):
 
     HEADER = r"^si[^_].*entonces$"
     FOOTER = r"^fin_si$"
-    BREAKPOINTS = {
-        r"^si_no.*$": "else:",
-    }
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        condition = Expression(
-            re.match(
-                r"^si\s+(.+?)\s+entonces$",
-                self._header,
-                flags=RegexConfig.FLAGS
-            ).groups()[0]
-        )
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
 
-        self._header = f"if {condition}:"
-
-    def _translate_footer(self) -> None:
-        """Translate the footer of the block.
-
-        This method translates the syntax of the footer of the block and
-        converts it to a equivalent Python statement.
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
         """
-        self._footer = re.sub(
-            r"^fin_si$",
-            '',
-            self._footer,
+        header = re.match(
+            r"^si\s+(.+?)\s+entonces$",
+            self._header,
             flags=RegexConfig.FLAGS
         )
+
+        if header is None:
+            return None
+
+        condition = Expression(header.groups()[0])
+        return f"if {condition}:"
+
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        return ''
+
+    def _translate_body(self) -> list[Expression | Block] | None:
+        """Translate block body to Python code.
+
+        Returns:
+            list[Expression | Block] | None: the translated body as list of
+                Expressions and Blocks or None, if the process was not
+                successful.
+        """
+        lines: list[Expression | Block] = []
+
+        for line in self.lines[1:-1]:
+            if not isinstance(line, Block) and not self.is_excluded(line):
+                if re.match(r"^SI_NO.*$", line, flags=RegexConfig.FLAGS):
+                    lines.append(Expression("else:"))
+                else:
+                    lines.append(Expression(line))
+            else:
+                lines.append(line)
+
+        return lines
+
+    def render(self, indentation_level: int = 0) -> list[str]:
+        """Render the block as indented, expanded code.
+
+        This method is responsible for expanding nested code blocks and
+        indenting each line so that the output conforms with Python syntax
+        rules.
+
+        Args:
+            indentation_level (int): the indentation level of each line.
+
+        Returns:
+            list[str]: the indented, expanded lines of code.
+        """
+        lines: list[str] = [self.indent(self._header, indentation_level)]
+
+        for line in self._body:  # type: ignore
+            if isinstance(line, Block):
+                sub_render = line.render(indentation_level + 1)
+                lines.extend(sub_render)
+            else:
+                if line.body == "else:":
+                    lines.append(self.indent(line, indentation_level))
+                else:
+                    lines.append(self.indent(line, indentation_level + 1))
+
+        lines.append(self.indent(self._footer, indentation_level))
+        return lines
 
 
 class MatchStatement(Block):
@@ -746,56 +820,56 @@ class MatchStatement(Block):
 
     HEADER = r"^caso.*sea$"
     FOOTER = r"^fin_caso$"
-    BREAKPOINTS = {
-        r"^si_no$": '',
-    }
+    EXCLUDE_LINES: tuple[str] = (r"^SI_NO$",)
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        case = Expression(
-            re.match(
-                r"^caso\s+(.+?)\s+sea$",
-                self._header,
-                flags=RegexConfig.FLAGS
-            ).groups()[0]
-        )
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
 
-        self._header = f"match {case}:"
-
-    def _translate_footer(self) -> None:
-        """Translate block footer to Python code."""
-        self._footer = re.sub(
-            r"^fin_caso$",
-            '',
-            self._footer,
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
+        """
+        header = re.match(
+            r"^caso\s+(.+?)\s+sea$",
+            self._header,
             flags=RegexConfig.FLAGS
         )
 
-    def _translate_body(self) -> None:
+        if header is None:
+            return None
+
+        case = Expression(header.groups()[0])
+        return f"match {case}:"
+
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        return ''
+
+    def _translate_body(self) -> list[Expression | Block] | None:
         """Translate block body to Python code.
 
-        This method is a generic body translation method. It is called in the
-        constructor of the class.
+        Returns:
+            list[Expression | Block] | None: the translated body as list of
+                Expressions and Blocks or None, if the process was not
+                successful.
         """
-        for i, line in enumerate(self.lines):
-            if not isinstance(line, Block):
-                matches = (
-                    re.match(exp, line, flags=RegexConfig.FLAGS)
-                    for exp in [self._header, self._footer] + list(
-                        self.BREAKPOINTS if self.BREAKPOINTS is not None
-                        else []
-                    )
-                )
-                if not all(matches) and "si_no" not in line.lower():
-                    if ':' not in line and line != '':
-                        self.lines[i] = Expression(f"case _: {line}")
+        lines = []
+        for line in self._body:
+            if not isinstance(line, Block) and "SI_NO" not in line:
+                if ':' not in line and line != '':
+                    lines.append(Expression(f"case _: {line}"))
+                else:
+                    value, expression = [
+                        item.strip() for item in line.split(':')
+                    ]
+                    lines.append(Expression(f"case {value}: {expression}"))
 
-                    else:
-                        value, expression = [
-                            item.strip() for item in line.split(':')
-                        ]
-                        self.lines[i] = Expression(
-                            f"case {value}: {expression}")
+        return lines  # type: ignore
 
 
 class Function(Block):
@@ -851,18 +925,41 @@ class Main(Function):
     HEADER = r"^inicio$"
     FOOTER = r"^fin$"
 
-    def _translate_header(self) -> None:
-        """Translate block header to Python code."""
-        self._header = "def main():"
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
 
-    def _translate_footer(self) -> None:
-        """Translate block footer to Python code."""
-        self._footer = re.sub(
-            r"^fin$",
-            'main()',
-            self._footer,
-            flags=RegexConfig.FLAGS
-        )
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
+        """
+        return "def main():"
+
+    def _translate_footer(self) -> str | None:
+        """Translate block footer to Python code.
+
+        Returns:
+            str | None: the translated footer or None, if the process was not
+                successful.
+        """
+        return "main()"
+
+    def _translate_body(self) -> list[Expression | Block] | None:
+        """Translate block body to Python code.
+
+        Returns:
+            list[Expression | Block] | None: the translated body as list of
+                Expressions and Blocks or None, if the process was not
+                successful.
+        """
+        lines: list[Expression | Block] = []
+
+        for line in self.lines[1:-1]:
+            if not isinstance(line, Block):
+                lines.append(Expression(line))
+            else:
+                lines.append(line)
+
+        return lines
 
 
 TYPES: Any = (
