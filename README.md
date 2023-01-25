@@ -26,10 +26,12 @@ _**Note:** the executable version might be flagged as a virus by some antivirus 
 
 | Data type | Translation | Supported |
 | :-------: | :---------: | :-------: |
-| `ENTERO` | `int` | ✅ |
-| `REAL` | `float` | ✅ |
-| `CARACTER` | `str` | ✅ |
-| `REGISTRO` | `class` | ❌ |
+| `Entero` | `int` | ✅ |
+| `Real` | `float` | ✅ |
+| `Caracter` | `str` | ✅ |
+| `Cadena` | `str` | ✅ |
+| `Logico` | `bool` | ✅ |
+| `Registro` | `class` | ✅ |
 
 ### Operators
 
@@ -53,7 +55,7 @@ _**Note:** the executable version might be flagged as a virus by some antivirus 
 | Method | Translation | Supported |
 | :----: | :---------: | :-------: |
 | `ESCRIBIR` | `print` | ✅ |
-| `LEER` | `input` | ❌ |
+| `LEER` | `input` | ✅ |
 
 ### Control statements
 
@@ -64,8 +66,8 @@ _**Note:** the executable version might be flagged as a virus by some antivirus 
 | Do While | `HACER...MIENTRAS` | `do while`[^2] | ✅ |
 | For | `DESDE...HASTA` | `from` | ✅ |
 | Match | `CASO...SEA` | `match` | ✅ |
-| Function | `FUNCION...` | `def`[^3] | ❌ |
-| Procedure | `PROCEDIMIENTO...` | `def`[^3] | ❌ |
+| Function | `FUNCION...` | `def`[^3] | ✅ |
+| Procedure | `PROCEDIMIENTO...` | `def`[^3] | ✅ |
 | Main function[^4] | `INICIO...FIN` | `def main()` | ✅ |
 
 ## Disclaimer
