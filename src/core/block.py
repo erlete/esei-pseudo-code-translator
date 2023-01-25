@@ -535,8 +535,8 @@ class ForLoop(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^desde.*hacer$"
-    FOOTER = r"^fin_desde$"
+    HEADER = r"^DESDE.*HACER$"
+    FOOTER = r"^FIN_DESDE$"
     BREAKPOINTS: dict[str, str] = {}
 
     def _translate_header(self) -> str | None:
@@ -547,13 +547,13 @@ class ForLoop(Block):
                 successful.
         """
         step = re.match(
-            r"^desde\s+(.+?)\s+hasta\s+(.+)\s+paso\s+(.+)\s+hacer$",
+            r"^DESDE\s+(.+?)\s+HASTA\s+(.+)\s+PASO\s+(.+)\s+HACER$",
             self._header,
             flags=RegexConfig.FLAGS
         )
 
         no_step = re.match(
-            r"^desde\s+(.+?)\s+hasta\s+([^PASO]+?)\s+hacer$",
+            r"^DESDE\s+(.+?)\s+HASTA\s+([^PASO]+?)\s+HACER$",
             self._header,
             flags=RegexConfig.FLAGS
         )
@@ -603,8 +603,8 @@ class WhileLoop(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^mientras.*hacer$"
-    FOOTER = r"^fin_mientras$"
+    HEADER = r"^MIENTRAS.*HACER$"
+    FOOTER = r"^FIN_MIENTRAS$"
 
     def _translate_header(self) -> str | None:
         """Translate block header to Python code.
@@ -614,7 +614,7 @@ class WhileLoop(Block):
                 successful.
         """
         match = re.match(
-            r"^mientras\s+(.+?)\s+hacer$",
+            r"^MIENTRAS\s+(.+?)\s+HACER$",
             self._header,
             flags=RegexConfig.FLAGS
         )
@@ -650,8 +650,8 @@ class DoWhileLoop(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^hacer$"
-    FOOTER = r"^mientras.*[^hacer]$"
+    HEADER = r"^HACER$"
+    FOOTER = r"^MIENTRAS.*[^HACER]$"
 
     def _translate_header(self) -> str | None:
         """Translate block header to Python code.
@@ -670,7 +670,7 @@ class DoWhileLoop(Block):
                 successful.
         """
         header = re.match(
-            r"^mientras\s+(.+?)$",
+            r"^MIENTRAS\s+(.+?)$",
             self._footer,
             flags=RegexConfig.FLAGS
         )
@@ -728,8 +728,8 @@ class IfStatement(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^si[^_].*entonces$"
-    FOOTER = r"^fin_si$"
+    HEADER = r"^SI[^_].*ENTONCES$"
+    FOOTER = r"^FIN_SI$"
 
     def _translate_header(self) -> str | None:
         """Translate block header to Python code.
@@ -739,7 +739,7 @@ class IfStatement(Block):
                 successful.
         """
         header = re.match(
-            r"^si\s+(.+?)\s+entonces$",
+            r"^SI\s+(.+?)\s+ENTONCES$",
             self._header,
             flags=RegexConfig.FLAGS
         )
@@ -823,8 +823,8 @@ class MatchStatement(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^caso.*sea$"
-    FOOTER = r"^fin_caso$"
+    HEADER = r"^CASO.*SEA$"
+    FOOTER = r"^FIN_CASO$"
     EXCLUDE_LINES: tuple[str] = (r"^SI_NO$",)
 
     def _translate_header(self) -> str | None:
@@ -835,7 +835,7 @@ class MatchStatement(Block):
                 successful.
         """
         header = re.match(
-            r"^caso\s+(.+?)\s+sea$",
+            r"^CASO\s+(.+?)\s+SEA$",
             self._header,
             flags=RegexConfig.FLAGS
         )
@@ -891,8 +891,8 @@ class Function(Block):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^.+funcion.+"
-    FOOTER = r"^fin_funcion$"
+    HEADER = r"^.+FUNCION.+"
+    FOOTER = r"^FIN_FUNCION$"
 
     @staticmethod
     def split_args(args: str) -> list[str]:
@@ -1043,8 +1043,9 @@ class Procedure(Function):
         FLAGS (int): flags to use when matching the header and footer.
     """
 
-    HEADER = r"^.+procedimiento"
-    FOOTER = r"^fin_procedimiento$"
+    HEADER = r"^PROCEDIMIENTO.*$"
+    FOOTER = r"^FIN_PROCEDIMIENTO$"
+
     def _translate_header(self) -> str | None:
         """Translate block header to Python code.
 
@@ -1099,7 +1100,7 @@ class Main(Function):
     """
 
     HEADER = r"^ALGORITMO.*?$"
-    FOOTER = r"^fin$"
+    FOOTER = r"^FIN$"
 
     def _translate_header(self) -> str | None:
         """Translate block header to Python code.
