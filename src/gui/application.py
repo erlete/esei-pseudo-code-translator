@@ -12,7 +12,7 @@ import os
 import sys
 from io import StringIO
 from ..core.code import Code
-import regex as re
+
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QCloseEvent, QDesktopServices, QIcon, QPixmap, QScreen
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
