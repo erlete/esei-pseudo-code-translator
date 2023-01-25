@@ -21,7 +21,8 @@ CLASS_NAMES = {
     "TestWhileLoop": "while_loop",
     "TestDoWhileLoop": "do_while_loop",
     "TestFunction": "function",
-    "TestMainFunction": "main_function"
+    "TestMainFunction": "main_function",
+    "TestProcedure": "procedure"
 }
 
 
@@ -100,6 +101,12 @@ class TestFunction(BaseTest):
 
 
 class TestMainFunction(BaseTest):
+
+    def test(self):
+        self.block_test()
+
+
+class TestProcedure(BaseTest):
 
     def test(self):
         self.block_test()

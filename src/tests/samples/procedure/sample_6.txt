@@ -1,0 +1,7 @@
+PROCEDIMIENTO test(E Entero: x, E Real: y)
+VARIABLES
+    x: Entero
+    y: Real
+INICIO
+    ESCRIBIR(0)
+FIN_PROCEDIMIENTO
