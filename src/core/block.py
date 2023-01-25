@@ -54,7 +54,11 @@ class Expression:
         r"LEER\s*\((.*)\)": r"\1 = input()",
         r"DEVOLVER\s*(.*)": r"return \1",
         r"Entero": "int",
-        r"Real": "float"
+        r"Real": "float",
+        r"Car.?cter": "str",
+        r"Cadena": "str",
+        r"L.?gico": "bool",
+        r"Registro.*": "Registro()"
     }
 
     REPR_LIMIT: int = 15

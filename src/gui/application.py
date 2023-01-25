@@ -11,7 +11,7 @@ Authors:
 import os
 import sys
 from io import StringIO
-from ..core.code import Code
+from typing import Callable
 
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QCloseEvent, QDesktopServices, QIcon, QPixmap, QScreen
@@ -19,9 +19,40 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
                              QInputDialog, QMainWindow, QPushButton,
                              QStackedLayout, QVBoxLayout, QWidget)
 
+from ..core.code import Code
 from ..core.scanner import Scanner
 from .labels import Footer, Subtitle, TextBoxLabel, Title
 from .text_boxes import CodeField
+
+
+def input_handler(parent: QWidget) -> Callable:
+    """Input handler generator function.
+
+    Args:
+        parent (QWidget): the parent widget.
+
+    Returns:
+        Callable: the custom input function.
+    """
+    def custom_input():
+        text, ok = QInputDialog.getText(
+            parent,
+            "Input",
+            "Introduce un valor:"
+        )
+        if ok:
+            if '.' in text:
+                try:
+                    return float(text)
+                except ValueError:
+                    return text
+            else:
+                try:
+                    return int(text)
+                except ValueError:
+                    return text
+
+    return custom_input
 
 
 def resource_path(relative_path):
@@ -206,20 +237,12 @@ class InputWindow(QMainWindow):
         code_input = self.code_output.text.toPlainText()
         code_status = "OK"
 
-        def input():
-            text, ok = QInputDialog.getText(
-                self, "Input", "Introduce un valor:")
-            if ok:
-                if '.' in text:
-                    try:
-                        return float(text)
-                    except ValueError:
-                        return text
-                else:
-                    try:
-                        return int(text)
-                    except ValueError:
-                        return text
+        input = input_handler(self)  # Intended builtin shadowing.
+
+        class Registro:
+
+            def __init__(self):
+                pass
 
         try:
             if code_input:
@@ -235,6 +258,7 @@ class InputWindow(QMainWindow):
         finally:
             self.exec_output.text.setText(code_output.strip())
             self.exec_status.text.setText(code_status.strip())
+
             if code_status != "OK":
                 self.exec_status.text.setStyleSheet("color: red")
             else:
