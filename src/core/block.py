@@ -1045,6 +1045,43 @@ class Procedure(Function):
 
     HEADER = r"^.+procedimiento"
     FOOTER = r"^fin_procedimiento$"
+    def _translate_header(self) -> str | None:
+        """Translate block header to Python code.
+
+        Returns:
+            str | None: the translated header or None, if the process was not
+                successful.
+        """
+        self.filter_lines()
+        components = re.match(
+            r"^PROCEDIMIENTO\s+(.*?)\s*\((.*)\)$",
+            self._header,
+            flags=RegexConfig.FLAGS
+        )
+
+        if components is not None:
+            components = components.groups()
+
+            identifier = components[0]
+            arguments, references = self.translate_args(
+                *self.split_args(components[1])
+            )
+
+            arguments_str = ", ".join(
+                str(identifier) for identifier in arguments
+            )
+
+            if references:
+                references_str = EditorConfig.SPACES_PER_TAB \
+                    * EditorConfig.INDENTATION_CHAR
+                references_str += f"global {', '.join(references)}"
+
+                return f"def {identifier}({arguments_str}):" \
+                    + f"\n{references_str}"
+
+            return f"def {identifier}({arguments_str}):"
+
+        return None
 
 
 class Main(Function):
