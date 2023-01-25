@@ -1,0 +1,4 @@
+ALGORITMO test
+INICIO
+    ESCRIBIR(0)
+FIN

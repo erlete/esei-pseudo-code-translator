@@ -1,0 +1,6 @@
+ALGORITMO test
+VARIABLES
+    x: Entero
+INICIO
+    ESCRIBIR(0)
+FIN

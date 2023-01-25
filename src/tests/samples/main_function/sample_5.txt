@@ -1,0 +1,11 @@
+ALGORITMO test
+VARIABLES
+    x: Entero
+INICIO
+    x <- 4
+    SI x > 0 ENTONCES
+        ESCRIBIR("El número es positivo")
+    SI_NO
+        ESCRIBIR("El número es negativo")
+    FIN_SI
+FIN

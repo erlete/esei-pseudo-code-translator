@@ -20,7 +20,8 @@ CLASS_NAMES = {
     "TestForLoop": "for_loop",
     "TestWhileLoop": "while_loop",
     "TestDoWhileLoop": "do_while_loop",
-    "TestFunction": "function"
+    "TestFunction": "function",
+    "TestMainFunction": "main_function"
 }
 
 
@@ -93,6 +94,12 @@ class TestDoWhileLoop(BaseTest):
 
 
 class TestFunction(BaseTest):
+
+    def test(self):
+        self.block_test()
+
+
+class TestMainFunction(BaseTest):
 
     def test(self):
         self.block_test()
