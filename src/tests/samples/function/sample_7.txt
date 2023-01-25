@@ -1,0 +1,10 @@
+Entero FUNCION test(E/S Entero: x)
+VARIABLES
+    x: Entero
+INICIO
+    SI x > 0 ENTONCES
+        ESCRIBIR("x es positivo")
+    SI_NO
+        ESCRIBIR("x es negativo")
+    FIN_SI
+FIN_FUNCION

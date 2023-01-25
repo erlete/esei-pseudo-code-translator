@@ -1,0 +1,6 @@
+Entero FUNCION test(E Entero: x)
+VARIABLES
+    x: Entero
+INICIO
+    ESCRIBIR(0)
+FIN_FUNCION
