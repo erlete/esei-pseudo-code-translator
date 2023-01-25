@@ -184,10 +184,10 @@ class Header3(Text):
         super().__init__(*args, **kwargs)
 
         self.font_name = "Menlo"
-        self.font_size = 16
+        self.font_size = 11
         self.font_weight = self.WEIGHTS["normal"]
-        self.text_alignment = self.ALIGNMENTS["left"]
-        self.contents_margins = (16, 16, 16, 16)
+        self.text_alignment = self.ALIGNMENTS["center"]
+        self.contents_margins = (12, 12, 12, 12)
 
         self.setup()
 

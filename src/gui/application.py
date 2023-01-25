@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
 
 from ..core.code import Code
 from ..core.scanner import Scanner
-from .labels import Footer, Subtitle, TextBoxLabel, Title
+from .labels import Footer, Header3, Subtitle, TextBoxLabel, Title
 from .text_boxes import CodeField
 
 
@@ -291,11 +291,22 @@ class MainWindow(QMainWindow):
         "title": "Pseudo Code Translator · v3.0"
     }
 
-    URL = "https://github.com/erlete/pseudo-code-translator/wiki/Welcome!"
+    URLS = {
+        "help": "https://github.com/erlete/pseudo-code-translator/wiki/"
+                + "Welcome!",
+        "project": "https://github.com/susoferreira/PseudoCode"
+    }
 
     def __init__(self):
         """Initialize the window."""
         super().__init__()
+
+        self.screen = QScreen.geometry(QApplication.primaryScreen())
+        self.resize(
+            int(self.screen.width() * .3),
+            int(self.screen.height() * .5)
+        )
+        self.setFixedSize(self.size())
 
         self.setWindowIcon(QIcon(resource_path("icon.ico")))
         self.setWindowTitle(self.LABELS["title"])
@@ -304,10 +315,6 @@ class MainWindow(QMainWindow):
         self.setup_buttons()
         self.setup_event_handlers()
         self.setup_layout()
-
-        screen = QScreen.geometry(QApplication.primaryScreen())
-        self.resize(int(screen.width() * .3), int(screen.height() * .5))
-        self.setFixedSize(self.size())
 
     def setup_fields(self) -> None:
         """Set up the window fields."""
@@ -330,14 +337,18 @@ class MainWindow(QMainWindow):
         """Set up control buttons."""
         self.info_button = QPushButton("Usage instructions")
         self.text_input_button = QPushButton("Translator")
+        self.project_button = QPushButton("Let's see it!")
 
     def setup_event_handlers(self) -> None:
         """Set up event handlers."""
         self.info_button.clicked.connect(  # type: ignore
-            lambda: QDesktopServices.openUrl(QUrl(self.URL))
+            lambda: QDesktopServices.openUrl(QUrl(self.URLS["help"]))
         )
         self.text_input_button.clicked.connect(  # type: ignore
             self.set_input_window
+        )
+        self.project_button.clicked.connect(  # type: ignore
+            lambda: QDesktopServices.openUrl(QUrl(self.URLS["project"]))
         )
 
     def setup_layout(self) -> None:
@@ -357,6 +368,10 @@ class MainWindow(QMainWindow):
         self.window_area.addWidget(self.slogan)
         self.window_area.addWidget(self.info_button)
         self.window_area.addWidget(self.text_input_button)
+        self.window_area.addWidget(Header3(
+            "Also try @susoferreira's pseudocode to C++ transpiler"
+        ))
+        self.window_area.addWidget(self.project_button)
         self.window_area.addWidget(self.copyright_footer)
 
         self.window_area.setContentsMargins(30, 30, 30, 30)
