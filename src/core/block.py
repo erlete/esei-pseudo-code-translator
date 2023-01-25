@@ -189,13 +189,16 @@ class Block:
         self.lines = lines
         self.start = start
         self.end = end
+
         self._header = self.lines[0]
         self._body = self.lines[1:-1]
         self._footer = self.lines[-1]
+
         self.parent: Block | None = None
         self.children: list[Block] = list()
-        self.top: list[Expression] = list()
-        self.bottom: list[Expression] = list()
+
+        self.globals: list[str] = list()
+        self.calls: list[Expression] = list()
 
     @staticmethod
     def indent(text: Any, indentation_level: int) -> str:
@@ -903,8 +906,7 @@ class Function(Block):
         """
         return [arg.strip() for arg in args.split(',')]
 
-    @staticmethod
-    def translate_args(*args: str) -> str:
+    def translate_args(self, *args: str) -> tuple[list[Expression], list[str]]:
         """Translate function arguments.
 
         Args:
@@ -913,30 +915,45 @@ class Function(Block):
         Returns:
             str: translated arguments.
         """
-        identifiers = []
+        identifiers, references = [], []
         args = tuple([arg for arg in args if arg])
+
         for arg in args:
             components = re.match(
                 r"^(.*?)\s+(.*?):\s+(.*?)$",
                 arg,
                 flags=RegexConfig.FLAGS
-            ).groups()
+            )
 
-            # structural_type = components[0]
-            data_type = components[1]
-            identifier = components[2]
+            if components is not None:
+                components = components.groups()
 
-            identifiers.append(Expression(f"{identifier}: {data_type}"))
+                structural_type = components[0]
+                data_type = components[1]
+                identifier = components[2]
 
-        return ", ".join(str(identifier) for identifier in identifiers)
+                if structural_type == "E/S":
+                    references.append(identifier)
+                    identifiers.append(Expression(
+                        f"{identifier}_: {data_type}"
+                    ))
+                else:
+                    identifiers.append(Expression(
+                        f"{identifier}: {data_type}"
+                    ))
+
+        self.globals.extend(references)
+        return identifiers, references
 
     def filter_lines(self):
         """Filter redundant lines of code from the body."""
         start = None
         for i, line in enumerate(self.lines[1:-1]):
-            if not isinstance(line, Block) and start is None and re.match(
-                            r"^INICIO$", line, flags=RegexConfig.FLAGS
-                        ):
+            if (
+                not isinstance(line, Block)
+                and start is None
+                and re.match(r"^INICIO$", line, flags=RegexConfig.FLAGS)
+            ):
                 start = i + 1
 
         if start is None:
@@ -961,11 +978,26 @@ class Function(Block):
 
         if components is not None:
             components = components.groups()
+
             return_type = Expression(components[0])
             identifier = components[1]
-            arguments = self.translate_args(*self.split_args(components[2]))
+            arguments, references = self.translate_args(
+                *self.split_args(components[2])
+            )
 
-            return f"def {identifier}({arguments}) -> {return_type}:"
+            arguments_str = ", ".join(
+                str(identifier) for identifier in arguments
+            )
+
+            if references:
+                references_str = EditorConfig.SPACES_PER_TAB \
+                    * EditorConfig.INDENTATION_CHAR
+                references_str += f"global {', '.join(references)}"
+
+                return f"def {identifier}({arguments_str}) -> {return_type}:" \
+                    + f"\n{references_str}"
+
+            return f"def {identifier}({arguments_str}) -> {return_type}:"
 
         return None
 
@@ -1049,7 +1081,7 @@ class Main(Function):
             str | None: the translated footer or None, if the process was not
                 successful.
         """
-        self.bottom.append("main()")
+        self.calls.append(Expression("main()"))
         return ''
 
 
